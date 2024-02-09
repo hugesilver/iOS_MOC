@@ -9,10 +9,6 @@ import SwiftUI
 import PhotosUI
 
 struct SignupView: View {
-    init() {
-        UINavigationBar.setAnimationsEnabled(false)
-    }
-    
     @State private var isLoading: Bool = false
     
     @State private var selectImage: UIImage?
@@ -21,9 +17,10 @@ struct SignupView: View {
     
     @State private var isDone: Bool = false
     
-    @ObservedObject var viewModel = UserInfoViewModel()
+    @ObservedObject private var viewModel = UserInfoViewModel()
     
-    var iconCamera: some View {
+    // 카메라 아이콘
+    private var iconCamera: some View {
         Circle()
             .frame(width: 32, height: 32)
             .foregroundColor(Color("MOCBackground"))
@@ -43,6 +40,7 @@ struct SignupView: View {
         NavigationStack {
             ZStack {
                 VStack(spacing: 0) {
+                    // 인사말
                     Text("가입을 환영합니다!\n프로필을 설정해봐요!")
                         .font(
                             .custom("Pretendard", size: 24)
@@ -52,6 +50,7 @@ struct SignupView: View {
                         .foregroundColor(Color("MOCTextColor"))
                         .padding(.bottom, 80)
                     
+                    // 프로필 사진 선택
                     PhotosPicker(selection: $photosPickerItem, matching: .images) {
                         if selectImage != nil {
                             Image(uiImage: selectImage!)
@@ -101,6 +100,7 @@ struct SignupView: View {
                     }
                     .padding(.bottom, 80)
                     
+                    // 닉네임 작성란
                     TextField("", text: $nickname, prompt: Text("닉네임을 입력하세요.").foregroundColor(Color("MOCLightGray")))
                         .background(Color("MOCBackground")).font(
                             .custom("Pretendard", size: 21)
@@ -119,9 +119,8 @@ struct SignupView: View {
                             nickname = String(nickname.prefix(8))
                         }
                 }
-                .padding(.horizontal, 50)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .background(Color("MOCBackground"))
+                // padding bottom 70 고정 버튼
                 .overlay(
                     RoundedRectangle(cornerRadius: 16)
                         .fill(isLoading ? Color("MOCLightGray") : Color("MOCYellow"))
@@ -137,19 +136,23 @@ struct SignupView: View {
                                 .multilineTextAlignment(.center)
                                 .foregroundColor(Color("MOCTextColor"))
                         )
-                        .padding(.horizontal, 50)
                         .padding(.bottom, 70)
                         .onTapGesture {
                             if !isLoading {
                                 isLoading = true
                                 Task {
-                                    await viewModel.uploadUserData(nickname: nickname, profileImage: selectImage)
+                                    let updateTask = await viewModel.uploadUserData(nickname: nickname, profileImage: selectImage)
+                                    if updateTask {
+                                        isDone = true
+                                    }
                                     isLoading = false
                                 }
                             }
                         }
                     , alignment: .bottom
                 )
+                .padding(.horizontal, 50)
+                .background(Color("MOCBackground"))
                 
                 // 프로필 업데이트 처리 중 화면
                 if isLoading {
@@ -159,7 +162,7 @@ struct SignupView: View {
                             .tint(.white)
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .background(Color.black.opacity(0.5))
+                    .background(Color.black.opacity(0.7))
                 }
             }
         }
@@ -178,9 +181,18 @@ struct SignupView: View {
                 Alert(title: Text("오류"), message: Text("오류가 발생하였습니다."), dismissButton: .default(Text("확인")))
             }
         }
+        .onAppear {
+            if viewModel.user != nil {
+                Task {
+                    await viewModel.getUserDocument(uid: viewModel.user!.uid)
+                }
+            }
+        }
         .navigationBarBackButtonHidden(true)
         .navigationBarHidden(true)
-        .ignoresSafeArea()
+        .navigationDestination(isPresented: $isDone, destination: {
+            ChatListView()
+        })
     }
 }
 

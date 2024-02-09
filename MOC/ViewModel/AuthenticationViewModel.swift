@@ -13,15 +13,18 @@ import GoogleSignIn
 import GoogleSignInSwift
 
 class AuthenticationViewModel: ObservableObject {
-    init() {
-        
+    enum AuthenticationError: Error {
+        case tokenError(message: String)
+    }
+    
+    enum ActiveAlert {
+        case areYouSureLogout, areYouSureDelete
     }
     
     private var authStateHandler: AuthStateDidChangeListenerHandle?
     
-    enum AuthenticationError: Error {
-        case tokenError(message: String)
-    }
+    @Published var activeAlert: ActiveAlert = .areYouSureLogout
+    @Published var showAlert: Bool = false
     
     func signInWithGoogle() async -> Bool {
         guard let clientID = FirebaseApp.app()?.options.clientID else {
@@ -75,13 +78,12 @@ class AuthenticationViewModel: ObservableObject {
         }
     }
     
-    func deleteAccount() async -> Bool {
+    func deleteAccount() async {
         do {
             try await Auth.auth().currentUser?.delete()
-            return true
+            try Auth.auth().signOut()
         } catch {
             print(error)
-            return false
         }
     }
     
@@ -100,7 +102,7 @@ class AuthenticationViewModel: ObservableObject {
             ])
             print("초기 유저 정보 생성 성공")
         } catch {
-            print("Error writing document: \(error.localizedDescription)")
+            print("문서 생성 중 실패: \(error.localizedDescription)")
         }
     }
 }

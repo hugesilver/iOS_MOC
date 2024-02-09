@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct SplashView: View {
-    @ObservedObject private var userInfoViewModel = UserInfoViewModel()
+    @ObservedObject private var viewModel = UserInfoViewModel()
     
     @State private var timer: Timer?
     @State private var seconds: Int = 0
@@ -38,19 +38,19 @@ struct SplashView: View {
             .background(Color("MOCBackground"))
             .ignoresSafeArea()
             .onAppear{
-                if userInfoViewModel.user != nil {
+                if viewModel.user != nil {
                     Task {
-                        await userInfoViewModel.getUserDocument(uid: userInfoViewModel.user!.uid)
+                        await viewModel.getUserDocument(uid: viewModel.user!.uid)
                     }
                 }
                 
                 startTimer()
             }
             .navigationDestination(isPresented: $showView, destination: {
-                if userInfoViewModel.user == nil {
+                if viewModel.user == nil {
                     WelcomeView()
                 } else {
-                    if userInfoViewModel.userInfo?.nickname == "" || userInfoViewModel.userInfo?.nickname == nil {
+                    if viewModel.userInfo?.nickname == "" || viewModel.userInfo?.nickname == nil {
                         SignupView()
                     } else {
                         ChatListView()

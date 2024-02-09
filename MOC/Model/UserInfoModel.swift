@@ -13,7 +13,7 @@ struct UserInfoModel: Codable {
     var joined_chatrooms: Array<String>
     var nickname: String
     var profile_image: String
-    var signup_date: Date
+    var signup_date: Timestamp
     var uid: String
     
     init?(data: [String: Any]) {
@@ -21,7 +21,7 @@ struct UserInfoModel: Codable {
               let joined_chatrooms = data["joined_chatrooms"] as? Array<String>,
               let nickname = data["nickname"] as? String,
               let profile_image = data["profile_image"] as? String,
-              let signup_date = data["signup_date"] as? Date,
+              let signup_date = data["signup_date"] as? Timestamp,
               let uid = data["uid"] as? String
         else {
             return nil

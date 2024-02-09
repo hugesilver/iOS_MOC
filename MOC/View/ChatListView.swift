@@ -12,12 +12,24 @@ struct ChatListView: View {
         UINavigationBar.setAnimationsEnabled(false)
     }
     
-    @ObservedObject var viewModel = UserInfoViewModel()
+    @ObservedObject private var viewModel = UserInfoViewModel()
+    
+    private let maxOffset: CGFloat = UIScreen.main.bounds.height * 0.18
+    private let closeOffset: CGFloat = UIScreen.main.bounds.height * 0.3
+    private let minOffset: CGFloat = UIScreen.main.bounds.height
+    
+    @State private var showMypage = false
+    @State private var mypageOffset: CGFloat = 0
+    @State private var backgroundOpacity: CGFloat = 0
+    
+    @GestureState private var gestureTranslation: CGFloat = 0
     
     var body: some View {
         NavigationStack {
-            ScrollView {
+            ZStack(alignment: .top) {
+                // ChatList
                 VStack {
+                    // 헤더
                     HStack(alignment: .center) {
                         Text("채팅")
                             .font(
@@ -25,10 +37,28 @@ struct ChatListView: View {
                                 .weight(.bold)
                             )
                             .foregroundColor(Color("MOCTextColor"))
+                        
                         Spacer()
-                        if viewModel.userInfo?.profile_image != nil && viewModel.userInfo?.profile_image != "" {
-                            AsyncImage(url: URL(string: viewModel.userInfo!.profile_image)) {
-                                image in image.resizable()
+                        
+                        // 마이페이지
+                        if let localProfileImage = viewModel.selectedProfileImage {
+                            Image(uiImage: localProfileImage)
+                                .resizable()
+                                .aspectRatio(contentMode: .fill)
+                                .clipShape(Circle())
+                                .frame(width: 42, height: 42)
+                                .overlay(
+                                    Circle()
+                                        .stroke(Color("MOCDarkGray"), lineWidth: 1)
+                                )
+                                .onTapGesture {
+                                    showMypage = true
+                                    mypageOffset = maxOffset
+                                }
+                        } else if let userInfo = viewModel.userInfo,
+                                  let url = URL(string: userInfo.profile_image) {
+                            AsyncImage(url: url) { image in
+                                image.resizable()
                             } placeholder: {
                                 Color("MOCDarkGray")
                             }
@@ -39,6 +69,10 @@ struct ChatListView: View {
                                 Circle()
                                     .stroke(Color("MOCDarkGray"), lineWidth: 1)
                             )
+                            .onTapGesture {
+                                showMypage = true
+                                mypageOffset = maxOffset
+                            }
                         } else {
                             Circle()
                                 .frame(width: 42, height: 42)
@@ -47,16 +81,73 @@ struct ChatListView: View {
                                     Circle()
                                         .stroke(Color("MOCDarkGray"), lineWidth: 1)
                                 )
+                                .onTapGesture {
+                                    showMypage = true
+                                    mypageOffset = maxOffset
+                                }
                         }
+                    }
+                    
+                    ScrollView {
                         
                     }
                 }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .padding(.horizontal, 20)
+                .padding(.top, 20)
+                .background(Color("MOCBackground"))
+                
+                if showMypage {
+                    Color.black.opacity(0.5)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .ignoresSafeArea()
+                        .onTapGesture {
+                            showMypage = false
+                        }
+                }
+                
+                // 마이페이지
+                MypageView(userInfo: $viewModel.userInfo)
+                    .clipShape(
+                        .rect(
+                            topLeadingRadius: 32,
+                            bottomLeadingRadius: 0,
+                            bottomTrailingRadius: 0,
+                            topTrailingRadius: 32
+                        )
+                    )
+                    .offset(y: showMypage ? max(mypageOffset, maxOffset) : UIScreen.main.bounds.height)
+                    .animation(.spring(), value: showMypage)
+                    .gesture(
+                        DragGesture()
+                            .updating($gestureTranslation) { value, state, _ in
+                                state = value.translation.height
+                            }
+                            .onChanged { gesture in
+                                mypageOffset = gesture.translation.height
+                            }
+                            .onEnded { gesture in
+                                if mypageOffset > closeOffset {
+                                    showMypage = false
+                                } else {
+                                    mypageOffset = maxOffset
+                                }
+                            }
+                    )
+                    .frame(maxWidth: .infinity, maxHeight: UIScreen.main.bounds.height)
+                    .ignoresSafeArea()
             }
-            .padding(.top, 20)
-            .padding(.horizontal, 20)
+        }        
+        .onAppear {
+            if viewModel.user != nil {
+                Task {
+                    await viewModel.getUserDocument(uid: viewModel.user!.uid)
+                }
+            }
         }
         .navigationBarBackButtonHidden(true)
         .navigationBarHidden(true)
+
     }
 }
 

@@ -52,6 +52,7 @@
 		E26597FD2B2EF74A00E2A0F3 /* FirebaseRemoteConfigSwift in Frameworks */ = {isa = PBXBuildFile; productRef = E26597FC2B2EF74A00E2A0F3 /* FirebaseRemoteConfigSwift */; };
 		E26597FF2B2EF74A00E2A0F3 /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = E26597FE2B2EF74A00E2A0F3 /* FirebaseStorage */; };
 		E26598012B2EF74A00E2A0F3 /* FirebaseStorageCombine-Community in Frameworks */ = {isa = PBXBuildFile; productRef = E26598002B2EF74A00E2A0F3 /* FirebaseStorageCombine-Community */; };
+		E2754A7F2B73F46C001FA19D /* MypageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2754A7E2B73F46C001FA19D /* MypageView.swift */; };
 		E2A3D4802B56CF6900979248 /* Images in Resources */ = {isa = PBXBuildFile; fileRef = E2A3D47F2B56CF6900979248 /* Images */; };
 		E2AC8B4D2B6026E800CDC1F5 /* SignupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2AC8B4C2B6026E800CDC1F5 /* SignupView.swift */; };
 		E2AC8B4F2B679AD700CDC1F5 /* UserInfoModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2AC8B4E2B679AD600CDC1F5 /* UserInfoModel.swift */; };
@@ -101,6 +102,7 @@
 		E26597B32B2DECCD00E2A0F3 /* MOCUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MOCUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		E26597B72B2DECCD00E2A0F3 /* MOCUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MOCUITests.swift; sourceTree = "<group>"; };
 		E26597B92B2DECCD00E2A0F3 /* MOCUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MOCUITestsLaunchTests.swift; sourceTree = "<group>"; };
+		E2754A7E2B73F46C001FA19D /* MypageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MypageView.swift; sourceTree = "<group>"; };
 		E2A3D47F2B56CF6900979248 /* Images */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Images; sourceTree = "<group>"; };
 		E2A3D4832B56D38E00979248 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		E2AC8B4C2B6026E800CDC1F5 /* SignupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignupView.swift; sourceTree = "<group>"; };
@@ -268,6 +270,7 @@
 				E2489EA12B56DF7700F5FB04 /* WelcomeView.swift */,
 				E2AC8B4C2B6026E800CDC1F5 /* SignupView.swift */,
 				E2AC8B542B7292B600CDC1F5 /* ChatListView.swift */,
+				E2754A7E2B73F46C001FA19D /* MypageView.swift */,
 			);
 			path = View;
 			sourceTree = "<group>";
@@ -537,6 +540,7 @@
 				E2AC8B4D2B6026E800CDC1F5 /* SignupView.swift in Sources */,
 				E2489EAB2B599D5E00F5FB04 /* AuthenticationViewModel.swift in Sources */,
 				E265979F2B2DECCB00E2A0F3 /* SplashView.swift in Sources */,
+				E2754A7F2B73F46C001FA19D /* MypageView.swift in Sources */,
 				E2489EAD2B5C10EF00F5FB04 /* UserInfoViewModel.swift in Sources */,
 				E2AC8B552B7292B600CDC1F5 /* ChatListView.swift in Sources */,
 				E2AC8B4F2B679AD700CDC1F5 /* UserInfoModel.swift in Sources */,

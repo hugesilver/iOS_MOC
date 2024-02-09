@@ -11,8 +11,9 @@ struct WelcomeView: View {
     @State private var isLoading: Bool = false
     @State private var isAuthPassed: Bool = false
     
-    @ObservedObject private var userInfoViewModel = UserInfoViewModel()
-    @ObservedObject private var authenticationViewModel = AuthenticationViewModel()
+    @ObservedObject private var authViewModel = AuthenticationViewModel()
+    
+    @State private var nickname: String?
     
     init() {
         UINavigationBar.setAnimationsEnabled(false)
@@ -22,11 +23,14 @@ struct WelcomeView: View {
         NavigationStack {
             ZStack{
                 VStack(spacing: 0) {
+                    // 로고
                     Image("Logo")
                         .resizable()
                         .aspectRatio(contentMode: .fit)
                         .frame(height: 100)
                         .padding(.bottom, 20)
+                    
+                    // 슬로건
                     Text("모두의 오픈채팅")
                         .font(
                             .custom("Pretendard", size: 16)
@@ -41,7 +45,7 @@ struct WelcomeView: View {
                         .foregroundColor(Color("MOCYellow"))
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .background(Color("MOCBackground"))
+                // padding bottom 70 고정 버튼
                 .overlay(
                     RoundedRectangle(cornerRadius: 16)
                         .fill(Color("MOCBackground"))
@@ -63,18 +67,23 @@ struct WelcomeView: View {
                                     .foregroundColor(Color("MOCDarkGray"))
                             }
                         )
-                        .padding(.horizontal, 50)
                         .padding(.bottom, 70)
                         .onTapGesture {
                             isLoading = true
                             Task {
-                                await authenticationViewModel.signInWithGoogle()
+                                let signinGoogle: Bool = await authViewModel.signInWithGoogle()
+                                
+                                if signinGoogle {
+                                    await getUserNickname()
+                                }
                             }
                             isLoading = false
                         }
                     
                     , alignment: .bottom
                 )
+                .padding(.horizontal, 50)
+                .background(Color("MOCBackground"))
                 .ignoresSafeArea()
                 
                 // 인증 처리 중 화면
@@ -85,19 +94,32 @@ struct WelcomeView: View {
                             .tint(.white)
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .background(Color.black.opacity(0.5))
+                    .background(Color.black.opacity(0.7))
                 }
             }
         }
         .navigationBarBackButtonHidden(true)
         .navigationBarHidden(true)
         .navigationDestination(isPresented: $isAuthPassed, destination: {
-            if userInfoViewModel.userInfo?.nickname == "" || userInfoViewModel.userInfo?.nickname == nil {
+            if nickname == "" || nickname == nil {
                 SignupView()
             } else {
                 ChatListView()
             }
         })
+    }
+    
+    func getUserNickname() async {
+        @ObservedObject var userInfoViewModel = UserInfoViewModel()
+        
+        if let user = userInfoViewModel.user {
+            let _ = await userInfoViewModel.getUserDocument(uid: user.uid)
+            
+            if let userInfo = userInfoViewModel.userInfo {
+                nickname = userInfo.nickname
+                isAuthPassed = true
+            }
+        }
     }
 }
 

@@ -10,25 +10,25 @@ import FirebaseAuth
 import FirebaseFirestore
 import FirebaseStorage
 
-enum ActiveAlert {
-    case isNicknameEmpty, isNicknameNotAllowed, isNicknameExist, isError
-}
-
-@MainActor class UserInfoViewModel: ObservableObject {
+@MainActor 
+class UserInfoViewModel: ObservableObject {
+    enum ActiveAlert {
+        case isNicknameEmpty, isNicknameNotAllowed, isNicknameExist, isError
+    }
+    
     @Published var user: User?
     @Published var userInfo: UserInfoModel?
     
     @Published var showAlert: Bool = false
     @Published var activeAlert: ActiveAlert = .isError
     
+    @Published var selectedProfileImage: UIImage?
+    
     private let db = Firestore.firestore()
     
     init() {
         if let user = Auth.auth().currentUser {
             self.user = user
-            Task {
-                await getUserDocument(uid: user.uid)
-            }
         }
     }
     
@@ -37,6 +37,9 @@ enum ActiveAlert {
         
         do {
             userInfo = try await ref.getDocument(as: UserInfoModel.self, decoder: Firestore.Decoder())
+            print("유저의 문서 불러오기 성공")
+            
+            return true
         } catch {
             print("유저의 문서 확인 중 오류: \(error.localizedDescription)")
         }
@@ -107,6 +110,8 @@ enum ActiveAlert {
     }
     
     func updateProfileImage(profileImage: UIImage) async {
+        selectedProfileImage = profileImage
+        
         guard let imageData = profileImage.jpegData(compressionQuality: 0.5) else {
             print("이미지 jpeg로 변환 중 오류")
             
@@ -150,7 +155,7 @@ enum ActiveAlert {
         }
     }
     
-    func uploadUserData(nickname: String, profileImage: UIImage?) async {
+    func uploadUserData(nickname: String, profileImage: UIImage?) async -> Bool {
         let checkNickname = await checkNickname(nickname: nickname)
         
         // 닉네임 업데이트
@@ -158,9 +163,14 @@ enum ActiveAlert {
             await updateNickname(nickname: nickname)
             
             // 프로필 사진 업데이트
-            if profileImage != nil {
+            if profileImage == nil {
+                return true
+            } else {
                 await updateProfileImage(profileImage: profileImage!)
+                return true
             }
         }
+        
+        return false
     }
 }
