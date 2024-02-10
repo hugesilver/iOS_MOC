@@ -12,8 +12,11 @@ import FirebaseFirestore
 struct MypageView: View {
     @Binding var userInfo: UserInfoModel?
     
-    @State private var selectImage: UIImage?
+    @Binding var selectImage: UIImage?
+    
     @State private var photosPickerItem: PhotosPickerItem?
+    
+    @Binding var imageUpdated: Bool
     
     @ObservedObject private var authViewModel = AuthenticationViewModel()
     
@@ -98,6 +101,8 @@ struct MypageView: View {
                                 guard let data = try? await image?.loadTransferable(type: Data.self) else { return }
                                 selectImage = UIImage(data: data)
                                 await UserInfoViewModel().updateProfileImage(profileImage: UIImage(data: data)!)
+                                
+                                imageUpdated = true
                             }
                             
                             photosPickerItem = nil

@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct SplashView: View {
-    @ObservedObject private var viewModel = UserInfoViewModel()
+    @StateObject var viewModel = UserInfoViewModel()
     
     @State private var timer: Timer?
     @State private var seconds: Int = 0
@@ -51,7 +51,7 @@ struct SplashView: View {
                     WelcomeView()
                 } else {
                     if viewModel.userInfo?.nickname == "" || viewModel.userInfo?.nickname == nil {
-                        SignupView()
+                        SignupView(viewModel: viewModel)
                     } else {
                         ChatListView()
                     }

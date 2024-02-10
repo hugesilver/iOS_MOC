@@ -10,7 +10,7 @@ import FirebaseAuth
 import FirebaseFirestore
 import FirebaseStorage
 
-@MainActor 
+@MainActor
 class UserInfoViewModel: ObservableObject {
     enum ActiveAlert {
         case isNicknameEmpty, isNicknameNotAllowed, isNicknameExist, isError
@@ -32,12 +32,24 @@ class UserInfoViewModel: ObservableObject {
         }
     }
     
+    func getUser() {
+        if let user = Auth.auth().currentUser {
+            self.user = user
+        }
+    }
+    
     func getUserDocument(uid: String) async -> Bool {
         let ref = db.collection("users").document(uid)
         
         do {
-            userInfo = try await ref.getDocument(as: UserInfoModel.self, decoder: Firestore.Decoder())
-            print("유저의 문서 불러오기 성공")
+            let documentSnapshot = try await ref.getDocument()
+            
+            if documentSnapshot.exists {
+                userInfo = UserInfoModel(data: documentSnapshot.data()!)
+                print("유저의 문서 불러오기 성공")
+            } else {
+                print("유저의 문서가 없음")
+            }
             
             return true
         } catch {
@@ -109,7 +121,7 @@ class UserInfoViewModel: ObservableObject {
         }
     }
     
-    func updateProfileImage(profileImage: UIImage) async {
+    func updateProfileImage(profileImage: UIImage) async -> String {
         selectedProfileImage = profileImage
         
         guard let imageData = profileImage.jpegData(compressionQuality: 0.5) else {
@@ -118,40 +130,22 @@ class UserInfoViewModel: ObservableObject {
             self.showAlert = true
             self.activeAlert = .isError
             
-            return
+            return ""
         }
         
+        let ref = Firestore.firestore().collection("users").document(user!.uid)
         let storageRef = Storage.storage().reference().child("profiles/\(user!.uid)/profile_\(user!.uid).jpg")
         
-        storageRef.putData(imageData, metadata: nil) { (_, error) in
-            guard error == nil else {
-                print("이미지 업로드 중 오류: \(error!.localizedDescription)")
-                self.showAlert = true
-                self.activeAlert = .isError
-                return
-            }
+        do {
+            storageRef.putData(imageData, metadata: nil)
+            let url: URL = try await storageRef.downloadURL()
+            try await ref.updateData(["profile_image": url.absoluteString ])
             
+            return url.absoluteString
             
-            storageRef.downloadURL { (url, error) in
-                guard error == nil else {
-                    print("이미지 다운로드 URL 생성 중 오류: \(error!.localizedDescription)")
-                    self.showAlert = true
-                    self.activeAlert = .isError
-                    return
-                }
-                
-                let ref = Firestore.firestore().collection("users").document(self.user!.uid)
-                Task {
-                    do {
-                        try await ref.updateData(["profile_image": url?.absoluteString ?? ""])
-                    } catch {
-                        print("닉네임 업데이트 중 오류: \(error.localizedDescription)")
-                        
-                        self.showAlert = true
-                        self.activeAlert = .isError
-                    }
-                }
-            }
+        } catch {
+            print("이미지 업로드 중 오류: \(error.localizedDescription)")
+            return ""
         }
     }
     
@@ -163,12 +157,16 @@ class UserInfoViewModel: ObservableObject {
             await updateNickname(nickname: nickname)
             
             // 프로필 사진 업데이트
-            if profileImage == nil {
-                return true
+            if profileImage != nil {
+                if await updateProfileImage(profileImage: profileImage!) != "" {
+                    return true
+                } else {
+                    return false
+                }
             } else {
-                await updateProfileImage(profileImage: profileImage!)
                 return true
             }
+            
         }
         
         return false

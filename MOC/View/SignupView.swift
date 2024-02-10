@@ -11,13 +11,13 @@ import PhotosUI
 struct SignupView: View {
     @State private var isLoading: Bool = false
     
-    @State private var selectImage: UIImage?
+    @State var selectImage: UIImage?
     @State private var photosPickerItem: PhotosPickerItem?
     @State private var nickname: String = ""
     
     @State private var isDone: Bool = false
     
-    @ObservedObject private var viewModel = UserInfoViewModel()
+    @StateObject var viewModel: UserInfoViewModel
     
     // 카메라 아이콘
     private var iconCamera: some View {
@@ -141,10 +141,13 @@ struct SignupView: View {
                             if !isLoading {
                                 isLoading = true
                                 Task {
-                                    let updateTask = await viewModel.uploadUserData(nickname: nickname, profileImage: selectImage)
-                                    if updateTask {
-                                        isDone = true
+                                    let uploadTask = await viewModel.uploadUserData(nickname: nickname, profileImage: selectImage)
+                                    if uploadTask {
+                                        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                                            isDone = true
+                                        }
                                     }
+                                    
                                     isLoading = false
                                 }
                             }
@@ -196,6 +199,6 @@ struct SignupView: View {
     }
 }
 
-#Preview {
-    SignupView()
-}
+//#Preview {
+//    SignupView()
+//}

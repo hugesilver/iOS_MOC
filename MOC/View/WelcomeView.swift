@@ -11,7 +11,8 @@ struct WelcomeView: View {
     @State private var isLoading: Bool = false
     @State private var isAuthPassed: Bool = false
     
-    @ObservedObject private var authViewModel = AuthenticationViewModel()
+    @StateObject private var authViewModel = AuthenticationViewModel()
+    @StateObject var userInfoViewModel = UserInfoViewModel()
     
     @State private var nickname: String?
     
@@ -102,7 +103,7 @@ struct WelcomeView: View {
         .navigationBarHidden(true)
         .navigationDestination(isPresented: $isAuthPassed, destination: {
             if nickname == "" || nickname == nil {
-                SignupView()
+                SignupView(viewModel: userInfoViewModel)
             } else {
                 ChatListView()
             }
@@ -110,7 +111,7 @@ struct WelcomeView: View {
     }
     
     func getUserNickname() async {
-        @ObservedObject var userInfoViewModel = UserInfoViewModel()
+        userInfoViewModel.getUser()
         
         if let user = userInfoViewModel.user {
             let _ = await userInfoViewModel.getUserDocument(uid: user.uid)

@@ -12,7 +12,7 @@ struct ChatListView: View {
         UINavigationBar.setAnimationsEnabled(false)
     }
     
-    @ObservedObject private var viewModel = UserInfoViewModel()
+    @StateObject var viewModel = UserInfoViewModel()
     
     private let maxOffset: CGFloat = UIScreen.main.bounds.height * 0.18
     private let closeOffset: CGFloat = UIScreen.main.bounds.height * 0.3
@@ -23,6 +23,9 @@ struct ChatListView: View {
     @State private var backgroundOpacity: CGFloat = 0
     
     @GestureState private var gestureTranslation: CGFloat = 0
+    
+    @State var imageUpdated: Bool = false
+    @State var selectImage: UIImage?
     
     var body: some View {
         NavigationStack {
@@ -41,7 +44,7 @@ struct ChatListView: View {
                         Spacer()
                         
                         // 마이페이지
-                        if let localProfileImage = viewModel.selectedProfileImage {
+                        if let localProfileImage = selectImage {
                             Image(uiImage: localProfileImage)
                                 .resizable()
                                 .aspectRatio(contentMode: .fill)
@@ -107,7 +110,7 @@ struct ChatListView: View {
                 }
                 
                 // 마이페이지
-                MypageView(userInfo: $viewModel.userInfo)
+                MypageView(userInfo: $viewModel.userInfo, selectImage: $selectImage, imageUpdated: $imageUpdated)
                     .clipShape(
                         .rect(
                             topLeadingRadius: 32,
@@ -137,7 +140,7 @@ struct ChatListView: View {
                     .frame(maxWidth: .infinity, maxHeight: UIScreen.main.bounds.height)
                     .ignoresSafeArea()
             }
-        }        
+        }
         .onAppear {
             if viewModel.user != nil {
                 Task {
@@ -145,12 +148,17 @@ struct ChatListView: View {
                 }
             }
         }
+        .onChange(of: imageUpdated) {
+            if imageUpdated {
+                imageUpdated = false
+            }
+        }
         .navigationBarBackButtonHidden(true)
         .navigationBarHidden(true)
-
+        
     }
 }
 
-#Preview {
-    ChatListView()
-}
+//#Preview {
+//    ChatListView()
+//}
