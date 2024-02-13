@@ -11,15 +11,10 @@ import FirebaseFirestore
 
 struct MypageView: View {
     @Binding var userInfo: UserInfoModel?
-    
     @Binding var selectImage: UIImage?
-    
     @State private var photosPickerItem: PhotosPickerItem?
-    
     @Binding var imageUpdated: Bool
-    
     @ObservedObject private var authViewModel = AuthenticationViewModel()
-    
     @State private var isDone: Bool = false
     
     private var indicator: some View {
