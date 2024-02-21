@@ -9,16 +9,16 @@ import Foundation
 import FirebaseFirestore
 
 struct UserInfoModel: Codable {
-    var created_chatrooms: Array<String>
-    var joined_chatrooms: Array<String>
+    var created_chatrooms: [String]
+    var joined_chatrooms: [String]
     var nickname: String
     var profile_image: String
     var signup_date: Timestamp
     var uid: String
     
     init?(data: [String: Any]) {
-        guard let created_chatrooms = data["created_chatrooms"] as? Array<String>,
-              let joined_chatrooms = data["joined_chatrooms"] as? Array<String>,
+        guard let created_chatrooms = data["created_chatrooms"] as? [String],
+              let joined_chatrooms = data["joined_chatrooms"] as? [String],
               let nickname = data["nickname"] as? String,
               let profile_image = data["profile_image"] as? String,
               let signup_date = data["signup_date"] as? Timestamp,

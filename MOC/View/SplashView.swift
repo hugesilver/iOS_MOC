@@ -10,9 +10,6 @@ import SwiftUI
 struct SplashView: View {
     @StateObject var viewModel = UserInfoViewModel()
     
-    @State private var timer: Timer?
-    @State private var seconds: Int = 0
-    
     @State private var showView: Bool = false
     @State private var isDone: Bool = false
     
@@ -44,7 +41,9 @@ struct SplashView: View {
                     }
                 }
                 
-                startTimer()
+                DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+                    showView = true
+                }
             }
             .navigationDestination(isPresented: $showView, destination: {
                 if viewModel.user == nil {
@@ -57,26 +56,6 @@ struct SplashView: View {
                     }
                 }
             })
-        }
-    }
-    
-    private func startTimer() {
-        stopTimer()
-        
-        timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
-            seconds += 1
-            
-            if seconds >= 2{
-                stopTimer()
-                showView = true
-            }
-        }
-    }
-    
-    private func stopTimer() {
-        if let timer = timer {
-            timer.invalidate()
-            self.timer = nil
         }
     }
 }

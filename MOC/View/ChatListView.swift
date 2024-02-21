@@ -6,13 +6,20 @@
 //
 
 import SwiftUI
+import FirebaseFirestore
 
 struct ChatListView: View {
     init() {
         UINavigationBar.setAnimationsEnabled(false)
     }
     
-    @StateObject var viewModel = UserInfoViewModel()
+    @StateObject var userInfoViewModel = UserInfoViewModel()
+    @StateObject var chatroomsViewModel = ChatroomsViewModel()
+    
+    @State var showAlert: Bool = false
+    @State var chatroomDocId: String?
+    
+    @State var isPresented: Bool = false
     
     private let maxOffset: CGFloat = UIScreen.main.bounds.height * 0.18
     private let closeOffset: CGFloat = UIScreen.main.bounds.height * 0.3
@@ -58,7 +65,7 @@ struct ChatListView: View {
                                     showMypage = true
                                     mypageOffset = maxOffset
                                 }
-                        } else if let userInfo = viewModel.userInfo,
+                        } else if let userInfo = userInfoViewModel.userInfo,
                                   let url = URL(string: userInfo.profile_image) {
                             AsyncImage(url: url) { image in
                                 image.resizable()
@@ -91,8 +98,42 @@ struct ChatListView: View {
                         }
                     }
                     
-                    ScrollView {
+                    // 채팅방 목록
+                    if let chatrooms = chatroomsViewModel.chatrooms, chatrooms.count > 0 {
+                        ScrollView {
+                            LazyVStack(spacing: 20) {
+                                ForEach(chatrooms, id: \.id) { chatroom in
+                                    chatroomBlock(data: chatroom)
+                                        .onTapGesture {
+                                            chatroomDocId = chatroom.id
+                                            
+                                            if chatroomsViewModel.user != nil {
+                                                if !chatroom.joined_people.contains(chatroomsViewModel.user!.uid) {
+                                                    showAlert = true
+                                                } else {
+                                                    isPresented = true
+                                                }
+                                            }
+                                        }
+                                }
+                            }
+                            .padding(.top, 50)
+                        }
+                        .refreshable {
+                            if chatroomsViewModel.user != nil {
+                                Task {
+                                    await chatroomsViewModel.getChatrooms()
+                                }
+                            }
+                        }
                         
+                    } else {
+                        VStack(alignment: .center) {
+                            Text("아직 채팅방이 없어요.")
+                                .font(Font.custom("Pretendard", size: 16))
+                                .foregroundColor(Color("MOCDarkGray"))
+                        }
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
                     }
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -110,7 +151,7 @@ struct ChatListView: View {
                 }
                 
                 // 마이페이지
-                MypageView(userInfo: $viewModel.userInfo, selectImage: $selectImage, imageUpdated: $imageUpdated)
+                MypageView(userInfo: $userInfoViewModel.userInfo, selectImage: $selectImage, imageUpdated: $imageUpdated)
                     .clipShape(
                         .rect(
                             topLeadingRadius: 32,
@@ -142,9 +183,15 @@ struct ChatListView: View {
             }
         }
         .onAppear {
-            if viewModel.user != nil {
+            if userInfoViewModel.user != nil {
                 Task {
-                    await viewModel.getUserDocument(uid: viewModel.user!.uid)
+                    await userInfoViewModel.getUserDocument(uid: userInfoViewModel.user!.uid)
+                }
+            }
+            
+            if chatroomsViewModel.user != nil {
+                Task {
+                    await chatroomsViewModel.getChatrooms()
                 }
             }
         }
@@ -155,10 +202,92 @@ struct ChatListView: View {
         }
         .navigationBarBackButtonHidden(true)
         .navigationBarHidden(true)
-        
+        .alert(isPresented: $showAlert) {
+            Alert(
+                title: Text("확인"),
+                message: Text("해당 채팅방에 입장하시겠습니까?"),
+                primaryButton: .default(Text("입장"), action: {
+                    Task {
+                        await chatroomsViewModel.joinChatroom(docId: chatroomDocId!)
+                        await chatroomsViewModel.getChatrooms()
+                    }
+                    
+                    isPresented = true
+                }),
+                secondaryButton: .default(Text("취소"))
+            )
+        }
+        .navigationDestination(isPresented: $isPresented, destination: {
+            
+        })
+    }
+    
+    func chatroomBlock(data: ChatroomModel) -> some View {
+        return RoundedRectangle(cornerRadius: 16)
+            .fill(Color("MOCBackground"))
+            .stroke(Color("MOCLightGray"), lineWidth: 1)
+            .frame(maxWidth: .infinity)
+            .frame(height: 100)
+            .overlay(
+                HStack {
+                    // 채팅방 정보
+                    VStack(alignment: .leading, spacing: 0) {
+                        Text(data.title)
+                            .font(
+                                .custom("Pretendard", size: 16)
+                                .weight(.medium)
+                            )
+                            .foregroundColor(Color("MOCTextColor"))
+                            .padding(.bottom, 2)
+                        
+                        HStack(spacing: 2) {
+                            Text("참여자")
+                                .font(Font.custom("Pretendard", size: 12))
+                                .foregroundColor(Color("MOCPink"))
+                            
+                            Text("\(data.joined_people.count)명")
+                                .font(Font.custom("Pretendard", size: 12))
+                                .foregroundColor(Color("MOCTextColor"))
+                        }
+                        
+                        Spacer()
+                        
+                        Text("\(formatTimestamp(timestamp: data.create_date)) 개설")
+                            .font(Font.custom("Pretendard", size: 10))
+                            .foregroundColor(Color("MOCDarkGray"))
+                    }
+                    
+                    Spacer()
+                    
+                    // 썸네일
+                    if data.thumbnail != "" {
+                        AsyncImage(url: URL(string: data.thumbnail)) {
+                            image in image.resizable()
+                        } placeholder: {
+                            Color("MOCDarkGray")
+                        }
+                        .aspectRatio(contentMode: .fill)
+                        .clipShape(RoundedRectangle(cornerRadius: 16))
+                        .frame(width: 80, height: 80)
+                    } else {
+                        RoundedRectangle(cornerRadius: 16)
+                            .fill(Color("MOCDarkGray"))
+                            .frame(width: 80, height: 80)
+                    }
+                }
+                    .padding(20)
+            )
+    }
+    
+    // Timestamp 타입 변환 함수
+    func formatTimestamp(timestamp: Timestamp) -> String {
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyy년 M월 d일"
+        let formattedDate = dateFormatter.string(from: timestamp.dateValue())
+        return formattedDate
     }
 }
 
-//#Preview {
-//    ChatListView()
-//}
+#Preview {
+    ChatListView()
+}
