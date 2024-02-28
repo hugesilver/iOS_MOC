@@ -59,6 +59,20 @@ class UserInfoViewModel: ObservableObject {
         return false
     }
     
+    func listenUserDocument(uid: String) async {
+        let ref = db.collection("users").document(uid)
+        
+        ref.addSnapshotListener { querySnapshot, error in
+            if let document = querySnapshot, document.exists {
+                self.userInfo = UserInfoModel(data: document.data()!)
+                print("유저 document Listener 성공")
+            } else {
+                print("유저 document Listener 실패")
+            }
+        }
+        
+    }
+    
     func validateNickname(nickname: String) -> Bool {
         let regexPattern = "^[a-zA-Z가-힣0-9]+$"
         
@@ -136,17 +150,22 @@ class UserInfoViewModel: ObservableObject {
         let ref = Firestore.firestore().collection("users").document(user!.uid)
         let storageRef = Storage.storage().reference().child("profiles/\(user!.uid)/profile_\(user!.uid).jpg")
         
-        do {
-            storageRef.putData(imageData, metadata: nil)
-            let url: URL = try await storageRef.downloadURL()
-            try await ref.updateData(["profile_image": url.absoluteString ])
-            
-            return url.absoluteString
-            
-        } catch {
-            print("이미지 업로드 중 오류: \(error.localizedDescription)")
-            return ""
+        
+        storageRef.putData(imageData, metadata: nil) { _, _ in
+            Task {
+                do {
+                    let url: URL = try await storageRef.downloadURL()
+                    try await ref.updateData(["profile_image": url.absoluteString ])
+                    
+                    return url.absoluteString
+                } catch {
+                    print("이미지 업로드 중 오류: \(error.localizedDescription)")
+                    return ""
+                }
+            }
         }
+        
+        return ""
     }
     
     func uploadUserData(nickname: String, profileImage: UIImage?) async -> Bool {

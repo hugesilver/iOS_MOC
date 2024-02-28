@@ -9,10 +9,6 @@ import SwiftUI
 import FirebaseFirestore
 
 struct ChatListView: View {
-    init() {
-        UINavigationBar.setAnimationsEnabled(false)
-    }
-    
     @StateObject var userInfoViewModel = UserInfoViewModel()
     @StateObject var chatroomsViewModel = ChatroomsViewModel()
     
@@ -65,9 +61,8 @@ struct ChatListView: View {
                                     showMypage = true
                                     mypageOffset = maxOffset
                                 }
-                        } else if let userInfo = userInfoViewModel.userInfo,
-                                  let url = URL(string: userInfo.profile_image) {
-                            AsyncImage(url: url) { image in
+                        } else if let profile = userInfoViewModel.userInfo?.profile_image, profile != "" {
+                            AsyncImage(url: URL(string: profile)) { image in
                                 image.resizable()
                             } placeholder: {
                                 Color("MOCDarkGray")
@@ -185,7 +180,7 @@ struct ChatListView: View {
         .onAppear {
             if userInfoViewModel.user != nil {
                 Task {
-                    await userInfoViewModel.getUserDocument(uid: userInfoViewModel.user!.uid)
+                    await userInfoViewModel.listenUserDocument(uid: userInfoViewModel.user!.uid)
                 }
             }
             
@@ -218,7 +213,7 @@ struct ChatListView: View {
             )
         }
         .navigationDestination(isPresented: $isPresented, destination: {
-            
+            ChatView(docId: $chatroomDocId)
         })
     }
     
@@ -282,7 +277,7 @@ struct ChatListView: View {
     // Timestamp 타입 변환 함수
     func formatTimestamp(timestamp: Timestamp) -> String {
         let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "yyyy년 M월 d일"
+        dateFormatter.dateFormat = "yyyy. M. d"
         let formattedDate = dateFormatter.string(from: timestamp.dateValue())
         return formattedDate
     }

@@ -22,7 +22,7 @@ struct MypageView: View {
             .fill(Color("MOCDarkGray"))
             .frame(
                 width: 60,
-                height: 6
+                height: 8
             )
     }
     
@@ -45,9 +45,11 @@ struct MypageView: View {
     
     var body: some View {
         NavigationStack {
-            VStack {
+            VStack(spacing: 0) {
                 // 인디케이터
-                indicator.padding()
+                indicator
+                    .padding(.top, 13)
+                    .padding(.bottom, 56)
                 
                 ScrollView {
                     VStack(spacing: 0) {
@@ -65,8 +67,8 @@ struct MypageView: View {
                                     )
                                     .overlay(iconCamera, alignment: .bottomTrailing)
                             } else {
-                                if userInfo?.profile_image != nil && userInfo?.profile_image != "" {
-                                    AsyncImage(url: URL(string: userInfo!.profile_image)) {
+                                if let profile = userInfo?.profile_image, profile != "" {
+                                    AsyncImage(url: URL(string: profile)) {
                                         image in image.resizable()
                                     } placeholder: {
                                         Color("MOCDarkGray")
@@ -102,7 +104,6 @@ struct MypageView: View {
                             
                             photosPickerItem = nil
                         }
-                        .padding(.top, 40)
                         .padding(.bottom, 16)
                         
                         // 닉네임
