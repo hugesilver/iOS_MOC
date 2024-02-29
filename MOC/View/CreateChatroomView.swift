@@ -1,23 +1,25 @@
 //
-//  SignupView.swift
+//  CreateChatroomView.swift
 //  MOC
 //
-//  Created by 김태은 on 1/24/24.
+//  Created by 김태은 on 3/1/24.
 //
 
 import SwiftUI
 import PhotosUI
 
-struct SignupView: View {
+struct CreateChatroomView: View {
+    @Environment(\.presentationMode) var presentationMode
+    
     @State private var isLoading: Bool = false
     
     @State var selectImage: UIImage?
     @State private var photosPickerItem: PhotosPickerItem?
-    @State private var nickname: String = ""
+    @State private var title: String = ""
     
     @State private var isDone: Bool = false
     
-    @StateObject var viewModel: UserInfoViewModel
+    @StateObject private var chatroomsViewModel = ChatroomsViewModel()
     
     // 카메라 아이콘
     private var iconCamera: some View {
@@ -40,8 +42,23 @@ struct SignupView: View {
         NavigationStack {
             ZStack {
                 VStack(spacing: 0) {
-                    // 인사말
-                    Text("가입을 환영합니다!\n프로필을 설정해봐요!")
+                    HStack {
+                        Image("IconClose")
+                            .resizable()
+                            .frame(width: 15, height: 15)
+                            .onTapGesture {
+                                if !isLoading {
+                                    isDone = true
+                                }
+                            }
+                        
+                        Spacer()
+                    }
+                    
+                    Spacer()
+                    
+                    // 텍스트
+                    Text("채팅방을 설정해보아요!")
                         .font(
                             .custom("Pretendard", size: 24)
                             .weight(.bold)
@@ -50,7 +67,7 @@ struct SignupView: View {
                         .foregroundColor(Color("MOCTextColor"))
                         .padding(.bottom, 80)
                     
-                    // 프로필 사진 선택
+                    // 썸네일 사진 선택
                     PhotosPicker(selection: $photosPickerItem, matching: .images) {
                         if selectImage != nil {
                             Image(uiImage: selectImage!)
@@ -64,30 +81,14 @@ struct SignupView: View {
                                 )
                                 .overlay(iconCamera, alignment: .bottomTrailing)
                         } else {
-                            if viewModel.userInfo?.profile_image != nil && viewModel.userInfo?.profile_image != "" {
-                                AsyncImage(url: URL(string: viewModel.userInfo!.profile_image)) {
-                                    image in image.resizable()
-                                } placeholder: {
-                                    Color("MOCDarkGray")
-                                }
-                                .aspectRatio(contentMode: .fill)
-                                .clipShape(Circle())
+                            Circle()
                                 .frame(width: 140, height: 140)
+                                .foregroundColor(Color("MOCDarkGray"))
                                 .overlay(
                                     Circle()
                                         .stroke(Color("MOCDarkGray"), lineWidth: 1)
                                 )
                                 .overlay(iconCamera, alignment: .bottomTrailing)
-                            } else {
-                                Circle()
-                                    .frame(width: 140, height: 140)
-                                    .foregroundColor(Color("MOCDarkGray"))
-                                    .overlay(
-                                        Circle()
-                                            .stroke(Color("MOCDarkGray"), lineWidth: 1)
-                                    )
-                                    .overlay(iconCamera, alignment: .bottomTrailing)
-                            }
                         }
                     }
                     .onChange(of: photosPickerItem) { image, _ in
@@ -98,28 +99,33 @@ struct SignupView: View {
                         
                         photosPickerItem = nil
                     }
-                    .padding(.bottom, 80)
+                    .padding(.bottom, 90)
                     
-                    // 닉네임 작성란
-                    TextField("", text: $nickname, prompt: Text("닉네임을 입력하세요.").foregroundColor(Color("MOCLightGray")))
-                        .background(Color("MOCBackground")).font(
-                            .custom("Pretendard", size: 21)
-                            .weight(.medium)
-                        )
-                        .foregroundColor(Color("MOCTextColor"))
-                        .multilineTextAlignment(.center)
-                        .padding(.bottom, 9)
-                        .overlay(
-                            Rectangle()
-                                .foregroundColor(Color("MOCTextColor"))
-                                .frame(height: 2)
-                            , alignment: .bottom
-                        )
-                        .onChange(of: nickname) { _, _ in
-                            nickname = String(nickname.prefix(8))
-                        }
+                    // 제목 작성란
+                    TextField("", text: $title, prompt: Text("제목을 입력하세요 (최대 15자)")
+                        .foregroundColor(Color("MOCLightGray")))
+                    .background(Color("MOCBackground")).font(
+                        .custom("Pretendard", size: 21)
+                        .weight(.medium)
+                    )
+                    .foregroundColor(Color("MOCTextColor"))
+                    .multilineTextAlignment(.center)
+                    .padding(.bottom, 9)
+                    .padding(.horizontal, 30)
+                    .overlay(
+                        Rectangle()
+                            .foregroundColor(Color("MOCTextColor"))
+                            .frame(height: 2)
+                            .padding(.horizontal, 30)
+                        , alignment: .bottom
+                    )
+                    .onChange(of: title) { _, _ in
+                        title = String(title.prefix(14))
+                    }
+                    
+                    Spacer()
                 }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .padding(.bottom, 80)
                 // padding bottom 70 고정 버튼
                 .overlay(
                     RoundedRectangle(cornerRadius: 16)
@@ -128,7 +134,7 @@ struct SignupView: View {
                         .frame(maxWidth: .infinity)
                         .frame(height: 45)
                         .overlay(
-                            Text("다음")
+                            Text("완료")
                                 .font(
                                     .custom("Pretendard", size: 20)
                                     .weight(.bold)
@@ -136,12 +142,13 @@ struct SignupView: View {
                                 .multilineTextAlignment(.center)
                                 .foregroundColor(Color("MOCTextColor"))
                         )
+                        .padding(.horizontal, 30)
                         .padding(.bottom, 70)
                         .onTapGesture {
                             if !isLoading {
                                 isLoading = true
                                 Task {
-                                    let uploadTask = await viewModel.uploadUserData(nickname: nickname, profileImage: selectImage)
+                                    let uploadTask = await chatroomsViewModel.createChatroom(title: title, thumbnail: selectImage)
                                     if uploadTask {
                                         DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
                                             isDone = true
@@ -152,8 +159,7 @@ struct SignupView: View {
                         }
                     , alignment: .bottom
                 )
-                .padding(.horizontal, 50)
-                .background(Color("MOCBackground"))
+                .padding(.horizontal, 20)
                 
                 // 프로필 업데이트 처리 중 화면
                 if isLoading {
@@ -166,37 +172,18 @@ struct SignupView: View {
                     .background(Color.black.opacity(0.7))
                 }
             }
+            .background(Color("MOCBackground"))
         }
-        .alert(isPresented: $viewModel.showAlert) {
-            switch viewModel.activeAlert {
-            case .isNicknameEmpty: return
-                Alert(title: Text("오류"), message: Text("닉네임을 입력하세요."), dismissButton: .default(Text("확인")))
-                
-            case .isNicknameNotAllowed: return
-                Alert(title: Text("오류"), message: Text("닉네임은 한글, 영문자, 숫자만 입력해주세요."), dismissButton: .default(Text("확인")))
-                
-            case .isNicknameExist: return
-                Alert(title: Text("알림"), message: Text("이미 존재하는 닉네임입니다."), dismissButton: .default(Text("확인")))
-                
-            case .isError: return
-                Alert(title: Text("오류"), message: Text("오류가 발생하였습니다."), dismissButton: .default(Text("확인")))
-            }
-        }
-        .onAppear {
-            if viewModel.user != nil {
-                Task {
-                    await viewModel.getUserDocument(uid: viewModel.user!.uid)
-                }
+        .onChange(of: isDone) {
+            if isDone {
+                presentationMode.wrappedValue.dismiss()
             }
         }
         .navigationBarBackButtonHidden(true)
         .navigationBarHidden(true)
-        .navigationDestination(isPresented: $isDone, destination: {
-            ChatListView()
-        })
     }
 }
 
-//#Preview {
-//    SignupView()
-//}
+#Preview {
+    CreateChatroomView()
+}

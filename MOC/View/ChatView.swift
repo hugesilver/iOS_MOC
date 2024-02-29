@@ -63,8 +63,8 @@ struct ChatView: View {
                 )
                 
                 // 채팅 영역
-                if let chats = chatViewModel.chats, !chats.isEmpty {
-                    let reversedChats = Array(chats.reversed())
+                if let messages = chatViewModel.messages, !messages.isEmpty {
+                    let reversedMessages = Array(messages.reversed())
                     
                     ScrollViewReader { scrollView in
                         ScrollView {
@@ -92,11 +92,11 @@ struct ChatView: View {
                                         .frame(maxWidth: .infinity)
                                 }
                                 
-                                ForEach(reversedChats.indices, id: \.self) { index in
-                                    let chat = reversedChats[index]
-                                    let prevChat = index > 0 ? reversedChats[index - 1] : nil
-                                    let nextChat = index < reversedChats.count - 1 ? reversedChats[index + 1] : nil
-                                    ChatBlockView(chats: reversedChats, chat: chat, prevChat: prevChat, nextChat: nextChat, index: index)
+                                ForEach(reversedMessages.indices, id: \.self) { index in
+                                    let message = reversedMessages[index]
+                                    let prevMessage = index > 0 ? reversedMessages[index - 1] : nil
+                                    let nextMessage = index < reversedMessages.count - 1 ? reversedMessages[index + 1] : nil
+                                    MessageBlockView(messages: reversedMessages, message: message, prevMessage: prevMessage, nextMessage: nextMessage, index: index)
                                 }
                                 
                                 Spacer()
@@ -127,7 +127,7 @@ struct ChatView: View {
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
                 
-                if chatViewModel.chats != nil {
+                if chatViewModel.messages != nil {
                     // 입력창
                     RoundedRectangle(cornerRadius: 16)
                         .fill(Color("MOCWhite"))
@@ -208,26 +208,26 @@ struct ChatView: View {
         UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
     }
     
-    func ChatBlockView(chats: [MessageModel], chat: MessageModel, prevChat: MessageModel?, nextChat: MessageModel?, index: Int) -> some View {
+    func MessageBlockView(messages: [MessageModel], message: MessageModel, prevMessage: MessageModel?, nextMessage: MessageModel?, index: Int) -> some View {
         if let user = chatViewModel.user {
-            let fromMe: Bool = chat.uid == user.uid
+            let fromMe: Bool = message.uid == user.uid
             
-            let isPrevSamePerson: Bool = prevChat != nil && prevChat!.uid == chat.uid
-            let isPrevSameDate: Bool = prevChat != nil && getDateTime(timestamp: prevChat!.time) == getDateTime(timestamp: chat.time)
-            let isPrevSameDay: Bool = prevChat != nil && getDay(timestamp: prevChat!.time) == getDay(timestamp: chat.time)
+            let isPrevSamePerson: Bool = prevMessage != nil && prevMessage!.uid == message.uid
+            let isPrevSameDate: Bool = prevMessage != nil && getDateTime(timestamp: prevMessage!.time) == getDateTime(timestamp: message.time)
+            let isPrevSameDay: Bool = prevMessage != nil && getDay(timestamp: prevMessage!.time) == getDay(timestamp: message.time)
             
-            // let isNextSamePerson: Bool = nextChat != nil && nextChat!.uid == chat.uid
-            let isNextSameDate: Bool = nextChat != nil && getDateTime(timestamp: nextChat!.time) == getDateTime(timestamp: chat.time)
+            // let isNextSamePerson: Bool = nextMessage != nil && nextMessage!.uid == message.uid
+            let isNextSameDate: Bool = nextMessage != nil && getDateTime(timestamp: nextMessage!.time) == getDateTime(timestamp: message.time)
             
             return AnyView(
                 VStack(spacing: 0) {
-                    if prevChat == nil || !isPrevSameDay {
-                        DateBlockView(timestamp: chat.time)
+                    if prevMessage == nil || !isPrevSameDay {
+                        DateBlockView(timestamp: message.time)
                             .padding(.bottom, 20)
                     }
                     
-                    if chat.type == "welcome" {
-                        WhichBlockView(chat: chat, fromMe: fromMe)
+                    if message.type == "welcome" {
+                        WhichBlockView(message: message, fromMe: fromMe)
                             .padding(.bottom, 20)
                     }
                     else {
@@ -235,15 +235,15 @@ struct ChatView: View {
                             if fromMe {
                                 Spacer()
                                 
-                                TimeBlockView(timestamp: chat.time, fromMe: fromMe, isLastMinute: nextChat == nil || !isNextSameDate)
+                                TimeBlockView(timestamp: message.time, fromMe: fromMe, isLastMinute: nextMessage == nil || !isNextSameDate)
                                     .padding(.trailing, 7)
                                 
-                                WhichBlockView(chat: chat, fromMe: fromMe)
+                                WhichBlockView(message: message, fromMe: fromMe)
                             }
                             
                             if !fromMe {
-                                if (prevChat!.type == "welcome" && prevChat!.uid == chat.uid) || (!isPrevSamePerson || !isPrevSameDate) {
-                                    if let profile = chatViewModel.joinedUsers[chat.uid], profile.profile_image != "" {
+                                if (prevMessage!.type == "welcome" && prevMessage!.uid == message.uid) || (!isPrevSamePerson || !isPrevSameDate) {
+                                    if let profile = chatViewModel.joinedUsers[message.uid], profile.profile_image != "" {
                                         AsyncImage(url: URL(string: profile.profile_image)) { image in
                                             image.resizable()
                                         } placeholder: {
@@ -261,7 +261,7 @@ struct ChatView: View {
                                     }
                                     
                                     VStack(alignment: .leading, spacing: 0) {
-                                        if let nickname = chatViewModel.joinedUsers[chat.uid]?.nickname {
+                                        if let nickname = chatViewModel.joinedUsers[message.uid]?.nickname {
                                             Text(nickname)
                                                 .font(Font.custom("Pretendard", size: 14))
                                                 .foregroundColor(Color("MOCDarkGray"))
@@ -273,16 +273,16 @@ struct ChatView: View {
                                                 .padding(.bottom, 2)
                                         }
                                         
-                                        WhichBlockView(chat: chat, fromMe: fromMe)
+                                        WhichBlockView(message: message, fromMe: fromMe)
                                     }
                                     .padding(.trailing, 7)
                                 } else {
-                                    WhichBlockView(chat: chat, fromMe: fromMe)
+                                    WhichBlockView(message: message, fromMe: fromMe)
                                         .padding(.leading, 53)
                                         .padding(.trailing, 7)
                                 }
                                 
-                                TimeBlockView(timestamp: chat.time, fromMe: fromMe, isLastMinute: nextChat == nil || !isNextSameDate)
+                                TimeBlockView(timestamp: message.time, fromMe: fromMe, isLastMinute: nextMessage == nil || !isNextSameDate)
                                 
                                 Spacer()
                             }
@@ -290,7 +290,7 @@ struct ChatView: View {
                     }
                 }
                     .frame(maxWidth: .infinity)
-                    .padding(.top, prevChat == nil || prevChat!.type == "welcome" ? 0 : !isPrevSameDay ? 20 : isPrevSamePerson && isPrevSameDate ? 5 : fromMe ? 10 : 20)
+                    .padding(.top, prevMessage == nil || prevMessage!.type == "welcome" ? 0 : !isPrevSameDay ? 20 : isPrevSamePerson && isPrevSameDate ? 5 : fromMe ? 10 : 20)
             )
         }
         
@@ -348,14 +348,14 @@ struct ChatView: View {
         }
     }
     
-    func WhichBlockView(chat: MessageModel, fromMe: Bool) -> some View {
-        switch (chat.type) {
+    func WhichBlockView(message: MessageModel, fromMe: Bool) -> some View {
+        switch (message.type) {
         case "text":
-            return AnyView(TextBlockView(text: chat.text!, fromMe: fromMe))
+            return AnyView(TextBlockView(text: message.text!, fromMe: fromMe))
         case "image":
-            return AnyView(ImageBlockView(image: chat.image!))
+            return AnyView(ImageBlockView(image: message.image!))
         case "welcome":
-            return AnyView(WelcomeView(nickname: chatViewModel.joinedUsers[chat.uid]?.nickname ?? "Unknown"))
+            return AnyView(WelcomeView(nickname: chatViewModel.joinedUsers[message.uid]?.nickname ?? "Unknown"))
         default:
             return AnyView(EmptyView())
         }

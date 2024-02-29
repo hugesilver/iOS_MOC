@@ -14,11 +14,13 @@ import FirebaseStorage
 class ChatViewModel: ObservableObject {
     @Published var user: User?
     @Published var chatroom: ChatroomModel?
-    var joined_people: [String] = []
-    var firstChatDocument: MessageModel?
-    var lastChatDocument: DocumentSnapshot?
+    private var joined_people: [String] = []
+    @Published var firstChatDocument: MessageModel?
+    @Published var lastChatDocument: DocumentSnapshot?
     
-    @Published var chats: [MessageModel]?
+    private let limit: Int = 40
+    
+    @Published var messages: [MessageModel]?
     @Published var joinedUsers: [String: UserInfoModel] = [:]
     
     private let db = Firestore.firestore()
@@ -51,7 +53,7 @@ class ChatViewModel: ObservableObject {
     }
     
     func getChatData(docId: String) async {
-        let ref = db.collection("chats").document(docId).collection("chat").order(by: "time", descending: true).limit(to: 50)
+        let ref = db.collection("chats").document(docId).collection("chat").order(by: "time", descending: true).limit(to: limit)
         
         ref.addSnapshotListener { querySnapshot, error in
             guard let documents = querySnapshot?.documents else {
@@ -59,12 +61,12 @@ class ChatViewModel: ObservableObject {
                 return
             }
             
-            if self.chats != nil {
+            if self.messages != nil {
                 querySnapshot?.documentChanges.forEach { diff in
                     if (diff.type == .added) {
                         if let firstChat = documents.first, let firstChatModel = MessageModel(id: firstChat.documentID, data: firstChat.data()) {
                             self.firstChatDocument = firstChatModel
-                            self.chats = [firstChatModel] + self.chats!
+                            self.messages = [firstChatModel] + self.messages!
                         }
                     }
                     if (diff.type == .modified) {
@@ -75,9 +77,7 @@ class ChatViewModel: ObservableObject {
                     }
                 }
             } else {
-                self.lastChatDocument = documents.last
-                
-                self.chats = documents.compactMap { document in
+                self.messages = documents.compactMap { document in
                     if document.exists {
                         return MessageModel(id: document.documentID, data: document.data())
                     } else {
@@ -85,12 +85,17 @@ class ChatViewModel: ObservableObject {
                         return nil
                     }
                 }
+                
+                if documents.count >= self.limit {
+                    self.lastChatDocument = documents.last
+                } else {
+                    self.lastChatDocument = nil
+                }
             }
         }
     }
     
     func getMoreChatData(docId: String) async {
-        let limit = 40
         var ref = db.collection("chats").document(docId).collection("chat").order(by: "time", descending: true).limit(to: limit)
         
         if let lastChatDocument {
@@ -103,7 +108,7 @@ class ChatViewModel: ObservableObject {
             let documents = querySnapshot.documents 
             
             if !documents.isEmpty{
-                let tempChats = documents.compactMap { document in
+                let tempMessages = documents.compactMap { document in
                     if document.exists {
                         return MessageModel(id: document.documentID, data: document.data())
                     } else {
@@ -112,10 +117,10 @@ class ChatViewModel: ObservableObject {
                     }
                 }
                 
-                if self.chats != nil {
-                    self.chats = self.chats! + tempChats
+                if self.messages != nil {
+                    self.messages = self.messages! + tempMessages
                 } else {
-                    self.chats = tempChats
+                    self.messages = tempMessages
                 }
                 
                 if documents.count >= limit {

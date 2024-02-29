@@ -96,21 +96,33 @@ struct ChatListView: View {
                     // 채팅방 목록
                     if let chatrooms = chatroomsViewModel.chatrooms, chatrooms.count > 0 {
                         ScrollView {
-                            LazyVStack(spacing: 20) {
-                                ForEach(chatrooms, id: \.id) { chatroom in
-                                    chatroomBlock(data: chatroom)
-                                        .onTapGesture {
-                                            chatroomDocId = chatroom.id
-                                            
-                                            if chatroomsViewModel.user != nil {
-                                                if !chatroom.joined_people.contains(chatroomsViewModel.user!.uid) {
-                                                    showAlert = true
-                                                } else {
-                                                    isPresented = true
+                            VStack(spacing: 0) {
+                                LazyVStack(spacing: 20) {
+                                    ForEach(chatrooms, id: \.id) { chatroom in
+                                        chatroomBlock(data: chatroom)
+                                            .onTapGesture {
+                                                chatroomDocId = chatroom.id
+                                                
+                                                if chatroomsViewModel.user != nil {
+                                                    if !chatroom.joined_people.contains(chatroomsViewModel.user!.uid) {
+                                                        showAlert = true
+                                                    } else {
+                                                        isPresented = true
+                                                    }
                                                 }
                                             }
-                                        }
+                                    }
                                 }
+                                Rectangle()
+                                    .fill(Color("MOCBackground"))
+                                    .frame(height: 20)
+                                    .onAppear {
+                                        if chatroomsViewModel.lastChatroomDocument != nil {
+                                            Task {
+                                                await chatroomsViewModel.getMoreChatRooms()
+                                            }
+                                        }
+                                    }
                             }
                             .padding(.top, 50)
                         }
@@ -173,7 +185,7 @@ struct ChatListView: View {
                                 }
                             }
                     )
-                    .frame(maxWidth: .infinity, maxHeight: UIScreen.main.bounds.height)
+                    .frame(maxWidth: .infinity, maxHeight: UIScreen.main.bounds.height * 0.82)
                     .ignoresSafeArea()
             }
         }
@@ -256,8 +268,10 @@ struct ChatListView: View {
                     
                     // 썸네일
                     if data.thumbnail != "" {
-                        AsyncImage(url: URL(string: data.thumbnail)) {
-                            image in image.resizable()
+                        AsyncImage(url: URL(string: data.thumbnail)) { image in
+                            image
+                                .resizable()
+                                .frame(width: 80, height: 80)
                         } placeholder: {
                             Color("MOCDarkGray")
                         }
@@ -283,6 +297,6 @@ struct ChatListView: View {
     }
 }
 
-#Preview {
-    ChatListView()
-}
+//#Preview {
+//    ChatListView()
+//}

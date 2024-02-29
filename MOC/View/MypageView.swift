@@ -11,12 +11,23 @@ import FirebaseFirestore
 
 struct MypageView: View {
     @Binding var userInfo: UserInfoModel?
+    
     @Binding var selectImage: UIImage?
     @State private var photosPickerItem: PhotosPickerItem?
     @Binding var imageUpdated: Bool
-    @ObservedObject private var authViewModel = AuthenticationViewModel()
-    @State private var isDone: Bool = false
     
+    @StateObject private var authViewModel = AuthenticationViewModel()
+    @StateObject private var chatroomsViewModel = ChatroomsViewModel()
+    
+    @State private var isAuth: Bool = false
+    @State private var isChat: Bool = false
+    @State private var isCreate: Bool = false
+    
+    private let chatroomsLimit: Int = 3
+    
+    @State private var chatroomDocId: String?
+    
+    // 섹션 인디케이터
     private var indicator: some View {
         RoundedRectangle(cornerRadius: 16)
             .fill(Color("MOCDarkGray"))
@@ -48,10 +59,9 @@ struct MypageView: View {
             VStack(spacing: 0) {
                 // 인디케이터
                 indicator
-                    .padding(.top, 13)
-                    .padding(.bottom, 56)
+                    .padding(.vertical, 13)
                 
-                ScrollView {
+                ScrollView(showsIndicators: false) {
                     VStack(spacing: 0) {
                         // 프로필 사진
                         PhotosPicker(selection: $photosPickerItem, matching: .images) {
@@ -117,7 +127,7 @@ struct MypageView: View {
                         
                         // 가입일
                         if userInfo?.signup_date != nil {
-                            Text("가입일: \(formatTimestamp(timestamp: userInfo!.signup_date))")
+                            Text("가입일: \(formatKoreanTimestamp(timestamp: userInfo!.signup_date))")
                                 .font(.custom("Pretendard", size: 16))
                                 .foregroundColor(Color("MOCDarkGray"))
                                 .padding(.bottom, 20)
@@ -169,7 +179,76 @@ struct MypageView: View {
                             }
                         }
                         .padding(.bottom, 25)
+                        
+                        // 개설한 채팅
+                        HStack(spacing: 10) {
+                            Text("개설한 채팅(\(userInfo?.created_chatrooms.count ?? 0)/\(chatroomsLimit))")
+                                .font(
+                                    .custom("Pretendard", size: 20)
+                                    .weight(.bold)
+                                )
+                                .foregroundColor(Color("MOCTextColor"))
+                            
+                            if let created_chatrooms = userInfo?.created_chatrooms, created_chatrooms.count < 3 {
+                                Circle()
+                                    .fill(Color("MOCYellow"))
+                                    .frame(width: 22, height: 22)
+                                    .overlay(
+                                        Image("IconPlus")
+                                            .frame(width: 10, height: 10)
+                                    )
+                                    .onTapGesture {
+                                        isCreate = true
+                                    }
+                            }
+                            
+                            Spacer()
+                        }
+                        .padding(.bottom, 20)
+                        
+                        if let chatrooms = chatroomsViewModel.created_chatrooms, chatrooms.count > 0 {
+                            LazyVStack(spacing: 20) {
+                                ForEach(chatrooms, id: \.id) { chatroom in
+                                    chatroomBlock(data: chatroom)
+                                        .onTapGesture {
+                                            chatroomDocId = chatroom.id
+                                            isChat = true
+                                        }
+                                }
+                            }
+                            .padding(.bottom, 25)
+                        } else {
+                            EmptyView()
+                                .padding(.bottom, 25)
+                        }
+                        
+                        // 참여 중인 채팅
+                        HStack(spacing: 0) {
+                            Text("참여 중인 채팅")
+                                .font(
+                                    .custom("Pretendard", size: 20)
+                                    .weight(.bold)
+                                )
+                                .foregroundColor(Color("MOCTextColor"))
+                                .padding(.bottom, 20)
+                            
+                            Spacer()
+                        }
+                        
+                        if let chatrooms = chatroomsViewModel.joined_chatrooms, chatrooms.count > 0 {
+                            LazyVStack(spacing: 20) {
+                                ForEach(chatrooms, id: \.id) { chatroom in
+                                    chatroomBlock(data: chatroom)
+                                        .onTapGesture {
+                                            chatroomDocId = chatroom.id
+                                            isChat = true
+                                        }
+                                }
+                            }
+                        }
                     }
+                    .padding(.top, 43)
+                    .padding(.bottom, 50)
                 }
             }
             .padding(.horizontal, 20)
@@ -182,7 +261,7 @@ struct MypageView: View {
                 message: Text("로그아웃 하시겠습니까?"),
                 primaryButton: .default(Text("로그아웃"), action: {
                     authViewModel.signOut()
-                    isDone = true
+                    isAuth = true
                 }),
                 secondaryButton: .cancel(Text("취소"))
             )
@@ -193,7 +272,7 @@ struct MypageView: View {
                 primaryButton: .default(Text("계정 삭제").foregroundColor(Color("MOCRed")), action: {
                     Task {
                         await authViewModel.deleteAccount()
-                        isDone = true
+                        isAuth = true
                     }
                 }),
                 secondaryButton: .cancel(Text("취소"))
@@ -202,13 +281,92 @@ struct MypageView: View {
         }
         .navigationBarBackButtonHidden(true)
         .navigationBarHidden(true)
-        .navigationDestination(isPresented: $isDone, destination: {
+        .navigationDestination(isPresented: $isAuth, destination: {
             WelcomeView()
         })
+        .navigationDestination(isPresented: $isChat, destination: {
+            ChatView(docId: $chatroomDocId)
+        })
+        .navigationDestination(isPresented: $isCreate, destination: {
+            CreateChatroomView()
+        })
+        .onAppear {
+            Task {
+                await chatroomsViewModel.getCreatedChatrooms()
+                await chatroomsViewModel.getJoinedChatrooms()
+            }
+        }
+    }
+    
+    func chatroomBlock(data: ChatroomModel) -> some View {
+        return RoundedRectangle(cornerRadius: 16)
+            .fill(Color("MOCBackground"))
+            .stroke(Color("MOCLightGray"), lineWidth: 1)
+            .frame(maxWidth: .infinity)
+            .frame(height: 100)
+            .overlay(
+                HStack {
+                    // 채팅방 정보
+                    VStack(alignment: .leading, spacing: 0) {
+                        Text(data.title)
+                            .font(
+                                .custom("Pretendard", size: 16)
+                                .weight(.medium)
+                            )
+                            .foregroundColor(Color("MOCTextColor"))
+                            .padding(.bottom, 2)
+                        
+                        HStack(spacing: 2) {
+                            Text("참여자")
+                                .font(Font.custom("Pretendard", size: 12))
+                                .foregroundColor(Color("MOCPink"))
+                            
+                            Text("\(data.joined_people.count)명")
+                                .font(Font.custom("Pretendard", size: 12))
+                                .foregroundColor(Color("MOCTextColor"))
+                        }
+                        
+                        Spacer()
+                        
+                        Text("\(formatTimestamp(timestamp: data.create_date)) 개설")
+                            .font(Font.custom("Pretendard", size: 10))
+                            .foregroundColor(Color("MOCDarkGray"))
+                    }
+                    
+                    Spacer()
+                    
+                    // 썸네일
+                    if data.thumbnail != "" {
+                        AsyncImage(url: URL(string: data.thumbnail)) { image in
+                            image
+                                .resizable()
+                                .frame(width: 80, height: 80)
+                        } placeholder: {
+                            Color("MOCDarkGray")
+                        }
+                        .aspectRatio(contentMode: .fill)
+                        .clipShape(RoundedRectangle(cornerRadius: 16))
+                        .frame(width: 80, height: 80)
+                    } else {
+                        RoundedRectangle(cornerRadius: 16)
+                            .fill(Color("MOCDarkGray"))
+                            .frame(width: 80, height: 80)
+                    }
+                }
+                    .padding(20)
+            )
     }
     
     // Timestamp 타입 변환 함수
     func formatTimestamp(timestamp: Timestamp) -> String {
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyy. M. d"
+        let formattedDate = dateFormatter.string(from: timestamp.dateValue())
+        return formattedDate
+    }
+    
+    // Timestamp 타입 변환 함수
+    func formatKoreanTimestamp(timestamp: Timestamp) -> String {
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "yyyy년 M월 d일"
         let formattedDate = dateFormatter.string(from: timestamp.dateValue())
