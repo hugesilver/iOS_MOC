@@ -195,6 +195,7 @@ struct MypageView: View {
                                     .frame(width: 22, height: 22)
                                     .overlay(
                                         Image("IconPlus")
+                                            .resizable()
                                             .frame(width: 10, height: 10)
                                     )
                                     .onTapGesture {

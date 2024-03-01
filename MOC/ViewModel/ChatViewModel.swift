@@ -12,6 +12,10 @@ import FirebaseStorage
 
 @MainActor
 class ChatViewModel: ObservableObject {
+    enum ActiveAlert {
+        case isTextError, isImageError, isError
+    }
+    
     @Published var user: User?
     @Published var chatroom: ChatroomModel?
     private var joined_people: [String] = []
@@ -22,6 +26,9 @@ class ChatViewModel: ObservableObject {
     
     @Published var messages: [MessageModel]?
     @Published var joinedUsers: [String: UserInfoModel] = [:]
+    
+    @Published var showAlert: Bool = false
+    @Published var activeAlert: ActiveAlert = .isError
     
     private let db = Firestore.firestore()
     
@@ -48,6 +55,9 @@ class ChatViewModel: ObservableObject {
                 }
             } else {
                 print("ChatroomModel 변환 중 실패")
+                
+                self.showAlert = true
+                self.activeAlert = .isError
             }
         }
     }
@@ -81,7 +91,10 @@ class ChatViewModel: ObservableObject {
                     if document.exists {
                         return MessageModel(id: document.documentID, data: document.data())
                     } else {
-                        print("ChatModel 변환 중 실패")
+                        print("chats 컬렉션 \(docId) 문서의 chat 컬렉션 내 \(document.documentID) 문서가 not exist")
+                        self.showAlert = true
+                        self.activeAlert = .isError
+                        
                         return nil
                     }
                 }
@@ -134,6 +147,9 @@ class ChatViewModel: ObservableObject {
             }
         } catch {
             print("채팅 더 불러오기 중 오류: \(error.localizedDescription)")
+            
+            showAlert = true
+            activeAlert = .isError
         }
         
         return false
@@ -174,7 +190,12 @@ class ChatViewModel: ObservableObject {
                 ])
             } catch {
                 print("택스트 채팅 전송 중 실패: \(error.localizedDescription)")
+                showAlert = true
+                activeAlert = .isTextError
             }
+        } else {
+            showAlert = true
+            activeAlert = .isError
         }
     }
     
@@ -187,6 +208,9 @@ class ChatViewModel: ObservableObject {
             
             guard let imageData = image.jpegData(compressionQuality: 0.8) else {
                 print("이미지 jpeg로 변환 중 오류")
+                showAlert = true
+                activeAlert = .isImageError
+                
                 return
             }
             
@@ -205,9 +229,14 @@ class ChatViewModel: ObservableObject {
                         ])
                     } catch {
                         print("채팅 이미지 업로드 중 오류: \(error.localizedDescription)")
+                        self.showAlert = true
+                        self.activeAlert = .isImageError
                     }
                 }
             }
+        } else {
+            showAlert = true
+            activeAlert = .isImageError
         }
     }
 }

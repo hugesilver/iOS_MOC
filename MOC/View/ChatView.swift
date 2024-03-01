@@ -203,6 +203,20 @@ struct ChatView: View {
             }
         }
         .background(Color("MOCBackground"))
+        .navigationBarBackButtonHidden(true)
+        .navigationBarHidden(true)
+        .alert(isPresented: $chatViewModel.showAlert) {
+            switch chatViewModel.activeAlert {
+            case .isTextError: return
+                Alert(title: Text("오류"), message: Text("메시지 전송 중 오류가 발생하였습니다."), dismissButton: .default(Text("확인")))
+                
+            case .isImageError: return
+                Alert(title: Text("오류"), message: Text("이미지 전송 중 오류가 발생하였습니다."), dismissButton: .default(Text("확인")))
+                
+            case .isError: return
+                Alert(title: Text("오류"), message: Text("기타 오류가 발생하였습니다."), dismissButton: .default(Text("확인")))
+            }
+        }
         .onAppear {
             if chatViewModel.user != nil {
                 Task {
@@ -211,8 +225,6 @@ struct ChatView: View {
                 }
             }
         }
-        .navigationBarBackButtonHidden(true)
-        .navigationBarHidden(true)
     }
     
     func hideKeyboard() {
