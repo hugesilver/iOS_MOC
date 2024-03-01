@@ -34,7 +34,6 @@ class ChatroomsViewModel: ObservableObject {
         do {
             let querySnapshot = try await ref.getDocuments()
             let documents = querySnapshot.documents
-            print("chatrooms 불러오기 성공")
             
             if !documents.isEmpty{
                 chatrooms = documents.compactMap { document in
@@ -68,7 +67,6 @@ class ChatroomsViewModel: ObservableObject {
         do {
             let querySnapshot = try await ref.getDocuments()
             let documents = querySnapshot.documents
-            print("chatrooms 더 불러오기 성공")
             
             let models = documents.compactMap { document in
                 if document.exists {

@@ -46,7 +46,6 @@ class UserInfoViewModel: ObservableObject {
             
             if documentSnapshot.exists {
                 userInfo = UserInfoModel(data: documentSnapshot.data()!)
-                print("유저의 문서 불러오기 성공")
             } else {
                 print("유저의 문서가 없음")
             }
@@ -65,7 +64,6 @@ class UserInfoViewModel: ObservableObject {
         ref.addSnapshotListener { querySnapshot, error in
             if let document = querySnapshot, document.exists {
                 self.userInfo = UserInfoModel(data: document.data()!)
-                print("유저 document Listener 성공")
             } else {
                 print("유저 document Listener 실패")
             }

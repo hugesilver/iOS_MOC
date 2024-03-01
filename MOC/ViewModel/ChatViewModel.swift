@@ -36,7 +36,7 @@ class ChatViewModel: ObservableObject {
         
         ref.addSnapshotListener { querySnapshot, error in
             guard let document = querySnapshot else {
-                print("No document")
+                print("chats 컬렉션 내 문서 없음")
                 return
             }
             
@@ -57,7 +57,7 @@ class ChatViewModel: ObservableObject {
         
         ref.addSnapshotListener { querySnapshot, error in
             guard let documents = querySnapshot?.documents else {
-                print("No documents")
+                print("chats 컬렉션 \(docId) 문서의 chat 컬렉션 내 문서가 없음")
                 return
             }
             
@@ -103,7 +103,6 @@ class ChatViewModel: ObservableObject {
         }
         
         do {
-            print("작동 중")
             let querySnapshot = try await ref.getDocuments()
             let documents = querySnapshot.documents 
             
@@ -147,7 +146,6 @@ class ChatViewModel: ObservableObject {
                 let document = try await ref.getDocument()
                 
                 if document.exists {
-                    print("\(person)의 문서 불러오기 성공")
                     joinedUsers[person] = UserInfoModel(data: document.data()!)
                 }
             } catch {
