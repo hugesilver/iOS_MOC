@@ -20,12 +20,12 @@ struct MypageView: View {
     @StateObject private var chatroomsViewModel = ChatroomsViewModel()
     
     @State private var isAuth: Bool = false
-    @State private var isChat: Bool = false
-    @State private var isCreate: Bool = false
+    @Binding var isChat: Bool
+    @Binding var isCreate: Bool
+    
+    @Binding var chatroomDocId: String?
     
     private let chatroomsLimit: Int = 3
-    
-    @State private var chatroomDocId: String?
     
     // 섹션 인디케이터
     private var indicator: some View {
@@ -283,12 +283,6 @@ struct MypageView: View {
         .navigationBarHidden(true)
         .navigationDestination(isPresented: $isAuth, destination: {
             WelcomeView()
-        })
-        .navigationDestination(isPresented: $isChat, destination: {
-            ChatView(docId: $chatroomDocId)
-        })
-        .navigationDestination(isPresented: $isCreate, destination: {
-            CreateChatroomView()
         })
         .onAppear {
             Task {

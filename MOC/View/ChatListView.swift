@@ -15,7 +15,8 @@ struct ChatListView: View {
     @State var showAlert: Bool = false
     @State var chatroomDocId: String?
     
-    @State var isPresented: Bool = false
+    @State var isChat: Bool = false
+    @State var isCreate: Bool = false
     
     private let maxOffset: CGFloat = UIScreen.main.bounds.height * 0.18
     private let closeOffset: CGFloat = UIScreen.main.bounds.height * 0.3
@@ -29,6 +30,8 @@ struct ChatListView: View {
     
     @State var imageUpdated: Bool = false
     @State var selectImage: UIImage?
+    
+    @State var nav = []
     
     var body: some View {
         NavigationStack {
@@ -107,7 +110,7 @@ struct ChatListView: View {
                                                     if !chatroom.joined_people.contains(chatroomsViewModel.user!.uid) {
                                                         showAlert = true
                                                     } else {
-                                                        isPresented = true
+                                                        isChat = true
                                                     }
                                                 }
                                             }
@@ -158,7 +161,7 @@ struct ChatListView: View {
                 }
                 
                 // 마이페이지
-                MypageView(userInfo: $userInfoViewModel.userInfo, selectImage: $selectImage, imageUpdated: $imageUpdated)
+                MypageView(userInfo: $userInfoViewModel.userInfo, selectImage: $selectImage, imageUpdated: $imageUpdated, isChat: $isChat, isCreate: $isCreate, chatroomDocId: $chatroomDocId)
                     .clipShape(
                         .rect(
                             topLeadingRadius: 32,
@@ -190,6 +193,7 @@ struct ChatListView: View {
             }
         }
         .onAppear {
+            UINavigationBar.setAnimationsEnabled(true)
             if userInfoViewModel.user != nil {
                 Task {
                     await userInfoViewModel.listenUserDocument(uid: userInfoViewModel.user!.uid)
@@ -219,14 +223,18 @@ struct ChatListView: View {
                         await chatroomsViewModel.getChatrooms()
                     }
                     
-                    isPresented = true
+                    isChat = true
                 }),
                 secondaryButton: .default(Text("취소"))
             )
         }
-        .navigationDestination(isPresented: $isPresented, destination: {
+        .navigationDestination(isPresented: $isChat, destination: {
             ChatView(docId: $chatroomDocId)
         })
+        .navigationDestination(isPresented: $isCreate, destination: {
+            CreateChatroomView()
+        })
+        
     }
     
     func chatroomBlock(data: ChatroomModel) -> some View {

@@ -12,7 +12,7 @@ struct SplashView: View {
     
     @State private var showView: Bool = false
     @State private var isDone: Bool = false
-    
+
     var body: some View {
         NavigationStack {
             ZStack {
@@ -60,6 +60,6 @@ struct SplashView: View {
     }
 }
 
-#Preview {
-    SplashView()
-}
+//#Preview {
+//    SplashView()
+//}

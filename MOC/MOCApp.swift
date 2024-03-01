@@ -16,11 +16,13 @@ struct MOCApp: App {
     // register app delegate for Firebase setup
     @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
     
+    init() {
+        UINavigationBar.setAnimationsEnabled(false)
+    }
+    
     var body: some Scene {
         WindowGroup {
-            NavigationView {
-                SplashView()
-            }
+            SplashView()
         }
     }
 }

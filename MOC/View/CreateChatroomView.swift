@@ -54,6 +54,8 @@ struct CreateChatroomView: View {
                         
                         Spacer()
                     }
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 75)
                     
                     Spacer()
                     

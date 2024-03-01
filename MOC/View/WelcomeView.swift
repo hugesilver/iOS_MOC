@@ -16,10 +16,6 @@ struct WelcomeView: View {
     
     @State private var nickname: String?
     
-    init() {
-        UINavigationBar.setAnimationsEnabled(false)
-    }
-    
     var body: some View {
         NavigationStack {
             ZStack{
