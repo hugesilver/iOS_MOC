@@ -18,6 +18,9 @@ struct ChatView: View {
     
     @StateObject var chatViewModel = ChatViewModel()
     
+    @State private var cooldown: Bool = false;
+    @State private var firstChatId: String?
+    
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
@@ -69,46 +72,44 @@ struct ChatView: View {
                     ScrollViewReader { scrollView in
                         ScrollView {
                             LazyVStack(spacing: 0) {
-                                if chatViewModel.lastChatDocument != nil {
-                                    Text("눌러서 더 불러오기")
-                                        .font(
-                                            .custom("Pretendard", size: 14)
-                                            .weight(.medium)
-                                        )
-                                        .multilineTextAlignment(.center)
-                                        .foregroundColor(Color("MOCBlue"))
-                                        .padding(.vertical, 10)
-                                        .onTapGesture {
-                                            if chatViewModel.lastChatDocument != nil {
-                                                Task {
-                                                    await chatViewModel.getMoreChatData(docId: docId!)
+                                Rectangle()
+                                    .fill(Color("MOCBackground"))
+                                    .frame(height: 20)
+                                    .frame(maxWidth: .infinity)
+                                    .onAppear {
+                                        if cooldown && chatViewModel.lastChatDocument != nil {
+                                            cooldown = false
+                                            Task {
+                                                let done: Bool = await chatViewModel.getMoreChatData(docId: docId!)
+                                                
+                                                if done {
+                                                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                                                        cooldown = true
+                                                    }
                                                 }
                                             }
                                         }
-                                } else {
-                                    Rectangle()
-                                        .fill(Color("MOCBackground"))
-                                        .frame(height: 20)
-                                        .frame(maxWidth: .infinity)
-                                }
+                                    }
                                 
                                 ForEach(reversedMessages.indices, id: \.self) { index in
                                     let message = reversedMessages[index]
                                     let prevMessage = index > 0 ? reversedMessages[index - 1] : nil
                                     let nextMessage = index < reversedMessages.count - 1 ? reversedMessages[index + 1] : nil
                                     MessageBlockView(messages: reversedMessages, message: message, prevMessage: prevMessage, nextMessage: nextMessage, index: index)
+                                        .id(message.id)
                                 }
                                 
                                 Spacer()
                                     .id("bottom")
                             }
-                            .rotationEffect(.degrees(180))
-                            .scaleEffect(x: -1.0, y: 1.0, anchor: .center)
+                            .onChange(of: reversedMessages) { _, _ in
+                                scrollView.scrollTo(firstChatId, anchor: .top)
+                                
+                                firstChatId = reversedMessages.first?.id
+                            }
                             .padding(.horizontal, 20)
                             .padding(.top, 10)
                         }
-                        .rotationEffect(.degrees(180))
-                        .scaleEffect(x: -1.0, y: 1.0, anchor: .center)
                         .frame(maxWidth: .infinity)
                         .onTapGesture {
                             hideKeyboard()
@@ -118,6 +119,14 @@ struct ChatView: View {
                                 if firstChat.uid == user.uid {
                                     scrollView.scrollTo("bottom")
                                 }
+                            }
+                        }
+                        .onAppear {
+                            firstChatId = reversedMessages.first?.id
+                            scrollView.scrollTo("bottom")
+                            
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                                cooldown = true
                             }
                         }
                     }

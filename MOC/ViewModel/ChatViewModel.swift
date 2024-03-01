@@ -95,7 +95,7 @@ class ChatViewModel: ObservableObject {
         }
     }
     
-    func getMoreChatData(docId: String) async {
+    func getMoreChatData(docId: String) async -> Bool {
         var ref = db.collection("chats").document(docId).collection("chat").order(by: "time", descending: true).limit(to: limit)
         
         if let lastChatDocument {
@@ -128,12 +128,16 @@ class ChatViewModel: ObservableObject {
                 } else {
                     self.lastChatDocument = nil
                 }
+                
+                return true
             } else {
                 self.lastChatDocument = nil
             }
         } catch {
             print("채팅 더 불러오기 중 오류: \(error.localizedDescription)")
         }
+        
+        return false
     }
     
     func getUsersData(chatroomModel: ChatroomModel) async {
