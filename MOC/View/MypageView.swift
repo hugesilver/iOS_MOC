@@ -16,12 +16,11 @@ struct MypageView: View {
     @State private var photosPickerItem: PhotosPickerItem?
     @Binding var imageUpdated: Bool
     
-    @StateObject private var authViewModel = AuthenticationViewModel()
     @StateObject private var chatroomsViewModel = ChatroomsViewModel()
     
-    @State private var isAuth: Bool = false
     @Binding var isChat: Bool
     @Binding var isCreate: Bool
+    @Binding var isSetting: Bool
     
     @Binding var chatroomDocId: String?
     
@@ -107,7 +106,7 @@ struct MypageView: View {
                             Task {
                                 guard let data = try? await image?.loadTransferable(type: Data.self) else { return }
                                 selectImage = UIImage(data: data)
-                                await UserInfoViewModel().updateProfileImage(profileImage: UIImage(data: data)!)
+                                let _ = await UserInfoViewModel().updateProfileImage(profileImage: UIImage(data: data)!)
                                 
                                 imageUpdated = true
                             }
@@ -139,12 +138,12 @@ struct MypageView: View {
                         }
                         
                         // 로그아웃, 계정삭제 버튼
-                        HStack(spacing: 10) {
+                        HStack {
                             ZStack {
                                 RoundedRectangle(cornerRadius: 8)
                                     .fill(Color("MOCDarkGray"))
                                 
-                                Text("로그아웃")
+                                Text("계정 설정")
                                     .font(
                                         .custom("Pretendard", size: 12)
                                         .weight(.medium)
@@ -154,28 +153,7 @@ struct MypageView: View {
                                     .padding(.vertical, 8)
                             }
                             .onTapGesture {
-                                authViewModel.activeAlert = .areYouSureLogout
-                                authViewModel.showAlert = true
-                            }
-                            
-                            ZStack {
-                                RoundedRectangle(cornerRadius: 8)
-                                    .fill(Color("MOCRed"))
-                                
-                                Text("계정 삭제")
-                                    .font(
-                                        .custom("Pretendard", size: 12)
-                                        .weight(.medium)
-                                    )
-                                    .multilineTextAlignment(.center)
-                                    .foregroundColor(Color("MOCWhite"))
-                                    .padding(.vertical, 8)
-                            }
-                            .onTapGesture {
-                                Task {
-                                    authViewModel.activeAlert = .areYouSureDelete
-                                    authViewModel.showAlert = true
-                                }
+                                isSetting = true
                             }
                         }
                         .padding(.bottom, 25)
@@ -255,36 +233,8 @@ struct MypageView: View {
             .padding(.horizontal, 20)
             .background(Color("MOCBackground"))
         }
-        .alert(isPresented: $authViewModel.showAlert) {
-            switch authViewModel.activeAlert {
-            case .areYouSureLogout: return Alert(
-                title: Text("확인"),
-                message: Text("로그아웃 하시겠습니까?"),
-                primaryButton: .default(Text("로그아웃"), action: {
-                    authViewModel.signOut()
-                    isAuth = true
-                }),
-                secondaryButton: .cancel(Text("취소"))
-            )
-                
-            case .areYouSureDelete: return Alert(
-                title: Text("경고"),
-                message: Text("정말로 계정을 삭제 하시겠습니까?"),
-                primaryButton: .default(Text("계정 삭제").foregroundColor(Color("MOCRed")), action: {
-                    Task {
-                        await authViewModel.deleteAccount()
-                        isAuth = true
-                    }
-                }),
-                secondaryButton: .cancel(Text("취소"))
-            )
-            }
-        }
         .navigationBarBackButtonHidden(true)
         .navigationBarHidden(true)
-        .navigationDestination(isPresented: $isAuth, destination: {
-            WelcomeView()
-        })
         .onAppear {
             Task {
                 await chatroomsViewModel.getCreatedChatrooms()

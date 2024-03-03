@@ -17,6 +17,7 @@ struct ChatListView: View {
     
     @State var isChat: Bool = false
     @State var isCreate: Bool = false
+    @State var isSetting: Bool = false
     
     private let maxOffset: CGFloat = UIScreen.main.bounds.height * 0.18
     private let closeOffset: CGFloat = UIScreen.main.bounds.height * 0.3
@@ -161,7 +162,7 @@ struct ChatListView: View {
                 }
                 
                 // 마이페이지
-                MypageView(userInfo: $userInfoViewModel.userInfo, selectImage: $selectImage, imageUpdated: $imageUpdated, isChat: $isChat, isCreate: $isCreate, chatroomDocId: $chatroomDocId)
+                MypageView(userInfo: $userInfoViewModel.userInfo, selectImage: $selectImage, imageUpdated: $imageUpdated, isChat: $isChat, isCreate: $isCreate, isSetting: $isSetting, chatroomDocId: $chatroomDocId)
                     .clipShape(
                         .rect(
                             topLeadingRadius: 32,
@@ -234,7 +235,9 @@ struct ChatListView: View {
         .navigationDestination(isPresented: $isCreate, destination: {
             CreateChatroomView()
         })
-        
+        .navigationDestination(isPresented: $isSetting, destination: {
+            SettingAccountView()
+        })
     }
     
     func chatroomBlock(data: ChatroomModel) -> some View {

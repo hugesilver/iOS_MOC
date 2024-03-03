@@ -24,7 +24,6 @@ class AuthenticationViewModel: ObservableObject {
     private var authStateHandler: AuthStateDidChangeListenerHandle?
     
     @Published var activeAlert: ActiveAlert = .areYouSureLogout
-    @Published var showAlert: Bool = false
     
     func signInWithGoogle() async -> Bool {
         guard let clientID = FirebaseApp.app()?.options.clientID else {

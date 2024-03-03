@@ -64,6 +64,7 @@
 		E2AC8B4F2B679AD700CDC1F5 /* UserInfoModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2AC8B4E2B679AD600CDC1F5 /* UserInfoModel.swift */; };
 		E2AC8B532B72754B00CDC1F5 /* .gitignore in Resources */ = {isa = PBXBuildFile; fileRef = E2AC8B522B72754B00CDC1F5 /* .gitignore */; };
 		E2AC8B552B7292B600CDC1F5 /* ChatListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2AC8B542B7292B600CDC1F5 /* ChatListView.swift */; };
+		E2D7B5E82B94C90A00363489 /* SettingAccountView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2D7B5E72B94C90A00363489 /* SettingAccountView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -121,6 +122,7 @@
 		E2AC8B4E2B679AD600CDC1F5 /* UserInfoModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserInfoModel.swift; sourceTree = "<group>"; };
 		E2AC8B522B72754B00CDC1F5 /* .gitignore */ = {isa = PBXFileReference; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
 		E2AC8B542B7292B600CDC1F5 /* ChatListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatListView.swift; sourceTree = "<group>"; };
+		E2D7B5E72B94C90A00363489 /* SettingAccountView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SettingAccountView.swift; sourceTree = "<group>"; };
 		FC47368DBFAE621402B4DDED /* Pods-MOC-MOCUITests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MOC-MOCUITests.release.xcconfig"; path = "Target Support Files/Pods-MOC-MOCUITests/Pods-MOC-MOCUITests.release.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -191,13 +193,6 @@
 			path = Pods;
 			sourceTree = "<group>";
 		};
-		DE604EF1DC11DC77E2496AFF /* Frameworks */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = Frameworks;
-			sourceTree = "<group>";
-		};
 		E2489EB12B5EDF7100F5FB04 /* Fonts */ = {
 			isa = PBXGroup;
 			children = (
@@ -221,7 +216,6 @@
 				E26597B62B2DECCD00E2A0F3 /* MOCUITests */,
 				E265979A2B2DECCB00E2A0F3 /* Products */,
 				05D46ADE139AB4B229F09369 /* Pods */,
-				DE604EF1DC11DC77E2496AFF /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -278,6 +272,7 @@
 		E26597C62B2DF22C00E2A0F3 /* View */ = {
 			isa = PBXGroup;
 			children = (
+				E2D7B5E72B94C90A00363489 /* SettingAccountView.swift */,
 				E265979E2B2DECCB00E2A0F3 /* SplashView.swift */,
 				E2489EA12B56DF7700F5FB04 /* WelcomeView.swift */,
 				E2AC8B4C2B6026E800CDC1F5 /* SignupView.swift */,
@@ -564,6 +559,7 @@
 				E2489EAD2B5C10EF00F5FB04 /* UserInfoViewModel.swift in Sources */,
 				E2AC8B552B7292B600CDC1F5 /* ChatListView.swift in Sources */,
 				E2AC8B4F2B679AD700CDC1F5 /* UserInfoModel.swift in Sources */,
+				E2D7B5E82B94C90A00363489 /* SettingAccountView.swift in Sources */,
 				E22545772B7E8BED00E1F031 /* ChatroomModel.swift in Sources */,
 				E225457B2B8FBD4500E1F031 /* MessageModel.swift in Sources */,
 				E2489EA22B56DF7700F5FB04 /* WelcomeView.swift in Sources */,
