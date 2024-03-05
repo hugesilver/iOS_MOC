@@ -197,17 +197,14 @@ class ChatroomsViewModel: ObservableObject {
                 
                 let storageRef = Storage.storage().reference().child("chatrooms/\(docId)/thumbnail_\(docId).jpg")
                 
-                storageRef.putData(imageData, metadata: nil) { _, _ in
-                    Task {
-                        do {
-                            let url: URL = try await storageRef.downloadURL()
-                            await self.createChatroomDocuments(docId: docId, date: date, title: title, thumbnailLink: url.absoluteString)
-                        } catch {
-                            print("이미지 업로드 중 오류: \(error.localizedDescription)")
-                            return false
-                        }
-                        return true
-                    }
+                do {
+                    let _ = try await storageRef.putDataAsync(imageData, metadata: nil)
+                    let url: URL = try await storageRef.downloadURL()
+                    
+                    await self.createChatroomDocuments(docId: docId, date: date, title: title, thumbnailLink: url.absoluteString)
+                } catch {
+                    print("이미지 업로드 중 오류: \(error.localizedDescription)")
+                    return false
                 }
             } else {
                 await createChatroomDocuments(docId: docId, date: date, title: title, thumbnailLink: nil)

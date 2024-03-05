@@ -73,8 +73,9 @@ struct WelcomeView: View {
                                 if signinGoogle {
                                     await getUserNickname()
                                 }
+                                
+                                isLoading = false
                             }
-                            isLoading = false
                         }
                     
                     , alignment: .bottom
@@ -109,13 +110,19 @@ struct WelcomeView: View {
     func getUserNickname() async {
         userInfoViewModel.getUser()
         
-        if let user = userInfoViewModel.user {
-            let _ = await userInfoViewModel.getUserDocument(uid: user.uid)
-            
+        guard let user = userInfoViewModel.user else {
+            print("유저 없음")
+            return
+        }
+        
+        let userDocTask: Bool = await userInfoViewModel.getUserDocument(uid: user.uid)
+        
+        if userDocTask {
             if let userInfo = userInfoViewModel.userInfo {
                 nickname = userInfo.nickname
-                isAuthPassed = true
             }
+            
+            isAuthPassed = true
         }
     }
 }

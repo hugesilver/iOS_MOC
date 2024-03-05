@@ -12,7 +12,7 @@ struct SplashView: View {
     
     @State private var showView: Bool = false
     @State private var isDone: Bool = false
-
+    
     var body: some View {
         NavigationStack {
             ZStack {
@@ -49,10 +49,14 @@ struct SplashView: View {
                 if viewModel.user == nil {
                     WelcomeView()
                 } else {
-                    if viewModel.userInfo?.nickname == "" || viewModel.userInfo?.nickname == nil {
-                        SignupView(viewModel: viewModel)
+                    if viewModel.userInfo?.nickname == nil {
+                        WelcomeView()
                     } else {
-                        ChatListView()
+                        if viewModel.userInfo?.nickname == "" {
+                            SignupView(viewModel: viewModel)
+                        } else {
+                            ChatListView()
+                        }
                     }
                 }
             })

@@ -104,6 +104,7 @@ struct SettingAccountView: View {
                 title: Text("확인"),
                 message: Text("로그아웃 하시겠습니까?"),
                 primaryButton: .default(Text("로그아웃"), action: {
+                    UINavigationBar.setAnimationsEnabled(false)
                     authViewModel.signOut()
                     isQuit = true
                 }),
@@ -114,6 +115,7 @@ struct SettingAccountView: View {
                 title: Text("경고"),
                 message: Text("정말로 계정을 삭제 하시겠습니까?"),
                 primaryButton: .default(Text("계정 삭제").foregroundColor(Color("MOCRed")), action: {
+                    UINavigationBar.setAnimationsEnabled(false)
                     Task {
                         await authViewModel.deleteAccount()
                         isQuit = true

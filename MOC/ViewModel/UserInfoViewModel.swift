@@ -46,13 +46,18 @@ class UserInfoViewModel: ObservableObject {
             
             if documentSnapshot.exists {
                 userInfo = UserInfoModel(data: documentSnapshot.data()!)
+                return true
             } else {
                 print("유저의 문서가 없음")
+                return false
             }
-            
-            return true
         } catch {
             print("유저의 문서 확인 중 오류: \(error.localizedDescription)")
+            do {
+                try Auth.auth().signOut()
+            } catch {
+                print("문서 확인 오류 중 강제 로그아웃 실패")
+            }
         }
         
         return false
@@ -148,22 +153,16 @@ class UserInfoViewModel: ObservableObject {
         let ref = Firestore.firestore().collection("users").document(user!.uid)
         let storageRef = Storage.storage().reference().child("profiles/\(user!.uid)/profile_\(user!.uid).jpg")
         
-        
-        storageRef.putData(imageData, metadata: nil) { _, _ in
-            Task {
-                do {
-                    let url: URL = try await storageRef.downloadURL()
-                    try await ref.updateData(["profile_image": url.absoluteString ])
-                    
-                    return url.absoluteString
-                } catch {
-                    print("이미지 업로드 중 오류: \(error.localizedDescription)")
-                    return ""
-                }
-            }
+        do {
+            let _ = try await storageRef.putDataAsync(imageData)
+            let url: URL = try await storageRef.downloadURL()
+            try await ref.updateData(["profile_image": url.absoluteString ])
+            
+            return url.absoluteString
+        } catch {
+            print("이미지 업로드 중 오류: \(error.localizedDescription)")
+            return ""
         }
-        
-        return ""
     }
     
     func uploadUserData(nickname: String, profileImage: UIImage?) async -> Bool {
@@ -175,15 +174,12 @@ class UserInfoViewModel: ObservableObject {
             
             // 프로필 사진 업데이트
             if profileImage != nil {
-                if await updateProfileImage(profileImage: profileImage!) != "" {
-                    return true
-                } else {
-                    return false
-                }
+                let uploadImageTask: String = await updateProfileImage(profileImage: profileImage!)
+                
+                return uploadImageTask != ""
             } else {
                 return true
             }
-            
         }
         
         return false

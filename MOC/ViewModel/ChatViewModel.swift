@@ -217,22 +217,20 @@ class ChatViewModel: ObservableObject {
             let ref = db.collection("chats").document(docId).collection("chat").document("\(dateString)_\(user!.uid)")
             let storageRef = Storage.storage().reference().child("chats/\(docId)/image_\(dateString)_\(user!.uid).jpg")
             
-            storageRef.putData(imageData, metadata: nil) { _, _ in
-                Task {
-                    do {
-                        let url: URL = try await storageRef.downloadURL()
-                        try await ref.setData([
-                            "image": url.absoluteString,
-                            "time": date,
-                            "type": "image",
-                            "uid": self.user!.uid,
-                        ])
-                    } catch {
-                        print("채팅 이미지 업로드 중 오류: \(error.localizedDescription)")
-                        self.showAlert = true
-                        self.activeAlert = .isImageError
-                    }
-                }
+            do {
+                let _ = try await storageRef.putDataAsync(imageData, metadata: nil)
+                let url: URL = try await storageRef.downloadURL()
+                
+                try await ref.setData([
+                    "image": url.absoluteString,
+                    "time": date,
+                    "type": "image",
+                    "uid": self.user!.uid,
+                ])
+            } catch {
+                print("채팅 이미지 업로드 중 오류: \(error.localizedDescription)")
+                self.showAlert = true
+                self.activeAlert = .isImageError
             }
         } else {
             showAlert = true
