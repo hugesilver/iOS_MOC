@@ -258,7 +258,7 @@ struct ChatView: View {
                             if fromMe {
                                 Spacer()
                                 
-                                TimeBlockView(timestamp: message.time, fromMe: fromMe, isLastMinute: nextMessage == nil || !isNextSameDate)
+                                TimeBlockView(timestamp: message.time, fromMe: fromMe, isLastMinute: nextMessage == nil || message.uid != nextMessage!.uid || !isNextSameDate)
                                     .padding(.trailing, 7)
                                 
                                 WhichBlockView(message: message, fromMe: fromMe)
@@ -305,7 +305,7 @@ struct ChatView: View {
                                         .padding(.trailing, 7)
                                 }
                                 
-                                TimeBlockView(timestamp: message.time, fromMe: fromMe, isLastMinute: nextMessage == nil || !isNextSameDate)
+                                TimeBlockView(timestamp: message.time, fromMe: fromMe, isLastMinute: nextMessage == nil || message.uid != nextMessage!.uid || !isNextSameDate)
                                 
                                 Spacer()
                             }
