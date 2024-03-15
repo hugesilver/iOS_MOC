@@ -29,7 +29,7 @@ class ChatroomsViewModel: ObservableObject {
     
     func getChatrooms() async {
         let limit: Int = 10
-        let ref = db.collection("chatrooms").order(by: "create_date", descending: true).limit(to: limit)
+        let ref = db.collection("chats").order(by: "create_date", descending: true).limit(to: limit)
         
         do {
             let querySnapshot = try await ref.getDocuments()
@@ -58,7 +58,7 @@ class ChatroomsViewModel: ObservableObject {
     
     func getMoreChatRooms() async {
         let limit: Int = 10
-        var ref = db.collection("chatrooms").order(by: "create_date", descending: true).limit(to: limit)
+        var ref = db.collection("chats").order(by: "create_date", descending: true).limit(to: limit)
         
         if let lastChatroomDocument {
             ref = ref.start(afterDocument: lastChatroomDocument)
@@ -72,7 +72,7 @@ class ChatroomsViewModel: ObservableObject {
                 if document.exists {
                     return ChatroomModel(id: document.documentID, data: document.data())
                 } else {
-                    print("chatrooms 내 문서 없음")
+                    print("chats 내 문서 없음")
                     return nil
                 }
             }
@@ -95,17 +95,10 @@ class ChatroomsViewModel: ObservableObject {
         formatter.dateFormat = "yyyyMMddHHmmssSS"
         let dateString = formatter.string(from: date)
         
-        let chatroomsRef = db.collection("chatrooms").document(docId)
         let chatsRef = db.collection("chats").document(docId)
         
         if user != nil {
             let usersRef = db.collection("users").document(user!.uid)
-            
-            do {
-                try await chatroomsRef.updateData(["joined_people" : FieldValue.arrayUnion([user!.uid])])
-            } catch {
-                print("chatroomsRef 업데이트 중 오류 발생: \(error.localizedDescription)")
-            }
             
             do {
                 try await chatsRef.updateData(["joined_people" : FieldValue.arrayUnion([user!.uid])])
@@ -133,7 +126,7 @@ class ChatroomsViewModel: ObservableObject {
     
     func getCreatedChatrooms() async {
         if user != nil {
-            let query = db.collection("chatrooms").order(by: "create_date", descending: true).whereField("creator", isEqualTo: user!.uid)
+            let query = db.collection("chats").order(by: "create_date", descending: true).whereField("creator", isEqualTo: user!.uid)
             
             do {
                 let querySnapshot = try await query.getDocuments()
@@ -157,7 +150,7 @@ class ChatroomsViewModel: ObservableObject {
     
     func getJoinedChatrooms() async {
         if user != nil {
-            let query = db.collection("chatrooms").order(by: "create_date", descending: true).whereField("joined_people", arrayContains: user!.uid)
+            let query = db.collection("chats").order(by: "create_date", descending: true).whereField("joined_people", arrayContains: user!.uid)
             
             do {
                 let querySnapshot = try await query.getDocuments()
@@ -219,20 +212,7 @@ class ChatroomsViewModel: ObservableObject {
     
     func createChatroomDocuments(docId: String, date: Date, title: String, thumbnailLink: String?) async {
         let usersRef = db.collection("users").document(user!.uid)
-        let chatroomsref = db.collection("chatrooms").document(docId)
         let chatsref = db.collection("chats").document(docId)
-        
-        do {
-            try await chatroomsref.setData([
-                "create_date": date,
-                "creator": user!.uid,
-                "joined_people": [user!.uid],
-                "thumbnail": thumbnailLink ?? "",
-                "title": title,
-            ])
-        } catch {
-            print("채팅방 생성 중(chatrooms) 실패: \(error.localizedDescription)")
-        }
         
         do {
             try await chatsref.setData([
