@@ -19,12 +19,15 @@ class AuthenticationViewModel: ObservableObject {
     }
     
     enum ActiveAlert {
-        case areYouSureLogout, areYouSureDelete
+        case areYouSureLogout, areYouSureDelete, error
     }
     
-    private var authStateHandler: AuthStateDidChangeListenerHandle?
-    
     @Published var activeAlert: ActiveAlert = .areYouSureLogout
+    @Published var showAlert: Bool = false
+    
+    let db = Firestore.firestore()
+    
+    private var authStateHandler: AuthStateDidChangeListenerHandle?
     
     func signInWithGoogle() async -> Bool {
         guard let clientID = FirebaseApp.app()?.options.clientID else {
@@ -75,21 +78,32 @@ class AuthenticationViewModel: ObservableObject {
         do {
             try Auth.auth().signOut()
         } catch {
-            print(error)
+            print(error.localizedDescription)
+            showAlert = true
+            activeAlert = .error
         }
     }
     
-    func deleteAccount() async {
-        do {
-            try await Auth.auth().currentUser?.delete()
-            try Auth.auth().signOut()
-        } catch {
-            print(error)
+    func deleteAccount(nickname: String?) async {
+        let user = Auth.auth().currentUser
+        
+        if nickname != nil {
+            do {
+                let ref = db.collection("users").document(user!.uid)
+                
+                try await ref.updateData(["nickname": "del_\(nickname!)"])
+                
+                try await Auth.auth().currentUser?.delete()
+                try Auth.auth().signOut()
+            } catch {
+                print(error.localizedDescription)
+                showAlert = true
+                activeAlert = .error
+            }
         }
     }
     
     func createUserDocument(user: User) async {
-        let db = Firestore.firestore()
         let ref = db.collection("users").document(user.uid)
         
         do {

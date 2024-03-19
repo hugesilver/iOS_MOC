@@ -236,7 +236,7 @@ struct ChatListView: View {
             CreateChatroomView()
         })
         .navigationDestination(isPresented: $isSetting, destination: {
-            SettingAccountView()
+            SettingAccountView(userInfo: $userInfoViewModel.userInfo)
         })
     }
     

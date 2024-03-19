@@ -10,8 +10,9 @@ import SwiftUI
 struct SettingAccountView: View {
     @Environment(\.presentationMode) var presentationMode
     
+    @Binding var userInfo: UserInfoModel?
+    
     @StateObject private var authViewModel = AuthenticationViewModel()
-    @State private var showAlert: Bool = false
     @State private var isQuit: Bool = false
     
     var body: some View {
@@ -72,7 +73,7 @@ struct SettingAccountView: View {
                     .listRowBackground(Color("MOCBackground"))
                     .onTapGesture {
                         authViewModel.activeAlert = .areYouSureLogout
-                        showAlert = true
+                        authViewModel.showAlert = true
                     }
                     
                     HStack {
@@ -88,7 +89,7 @@ struct SettingAccountView: View {
                     .listRowBackground(Color("MOCBackground"))
                     .onTapGesture {
                         authViewModel.activeAlert = .areYouSureDelete
-                        showAlert = true
+                        authViewModel.showAlert = true
                     }
                 }
                 .scrollContentBackground(.hidden)
@@ -98,7 +99,7 @@ struct SettingAccountView: View {
         .background(Color("MOCBackground"))
         .navigationBarBackButtonHidden(true)
         .navigationBarHidden(true)
-        .alert(isPresented: $showAlert) {
+        .alert(isPresented: $authViewModel.showAlert) {
             switch authViewModel.activeAlert {
             case .areYouSureLogout: return Alert(
                 title: Text("확인"),
@@ -117,11 +118,16 @@ struct SettingAccountView: View {
                 primaryButton: .default(Text("계정 삭제").foregroundColor(Color("MOCRed")), action: {
                     UINavigationBar.setAnimationsEnabled(false)
                     Task {
-                        await authViewModel.deleteAccount()
+                        await authViewModel.deleteAccount(nickname: userInfo?.nickname)
                         isQuit = true
                     }
                 }),
                 secondaryButton: .cancel(Text("취소"))
+            )
+            case .error: return Alert(
+                title: Text("오류"),
+                message: Text("처리 중 오류가 발생하였습니다."),
+                dismissButton: .default(Text("확인"))
             )
             }
         }
@@ -131,6 +137,6 @@ struct SettingAccountView: View {
     }
 }
 
-#Preview {
-    SettingAccountView()
-}
+//#Preview {
+//    SettingAccountView()
+//}
