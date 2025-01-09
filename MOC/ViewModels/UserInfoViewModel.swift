@@ -8,6 +8,7 @@
 import Foundation
 import FirebaseAuth
 import FirebaseFirestore
+import FirebaseFirestoreSwift
 import FirebaseStorage
 
 @MainActor
@@ -45,7 +46,7 @@ class UserInfoViewModel: ObservableObject {
             let documentSnapshot = try await ref.getDocument()
             
             if documentSnapshot.exists {
-                userInfo = UserInfoModel(data: documentSnapshot.data()!)
+                userInfo = try? documentSnapshot.data(as: UserInfoModel.self)
                 return true
             } else {
                 print("유저의 문서가 없음")
@@ -68,7 +69,7 @@ class UserInfoViewModel: ObservableObject {
         
         ref.addSnapshotListener { querySnapshot, error in
             if let document = querySnapshot, document.exists {
-                self.userInfo = UserInfoModel(data: document.data()!)
+                self.userInfo = try? document.data(as: UserInfoModel.self)
             } else {
                 print("유저 document Listener 실패")
             }
@@ -156,7 +157,7 @@ class UserInfoViewModel: ObservableObject {
         do {
             let _ = try await storageRef.putDataAsync(imageData)
             let url: URL = try await storageRef.downloadURL()
-            try await ref.updateData(["profile_image": url.absoluteString ])
+            try await ref.updateData(["profile_image": url.absoluteString])
             
             return url.absoluteString
         } catch {

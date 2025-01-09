@@ -8,6 +8,7 @@
 import Foundation
 import FirebaseAuth
 import FirebaseFirestore
+import FirebaseFirestoreSwift
 import FirebaseStorage
 
 @MainActor
@@ -38,7 +39,7 @@ class ChatroomsViewModel: ObservableObject {
             if !documents.isEmpty{
                 chatrooms = documents.compactMap { document in
                     if document.exists {
-                        return ChatroomModel(id: document.documentID, data: document.data())
+                        return try? document.data(as: ChatroomModel.self)
                     } else {
                         print("chatrooms 내 문서 없음")
                         return nil
@@ -70,7 +71,7 @@ class ChatroomsViewModel: ObservableObject {
             
             let models = documents.compactMap { document in
                 if document.exists {
-                    return ChatroomModel(id: document.documentID, data: document.data())
+                    return try? document.data(as: ChatroomModel.self)
                 } else {
                     print("chats 내 문서 없음")
                     return nil
@@ -135,7 +136,9 @@ class ChatroomsViewModel: ObservableObject {
                 if !documents.isEmpty {
                     created_chatrooms = documents.compactMap { document in
                         if document.exists {
-                            return ChatroomModel(id: document.documentID, data: document.data())
+                            let chatroom = try? document.data(as: ChatroomModel.self)
+                            
+                            return chatroom
                         } else {
                             print("getCreatedChatrooms 함수 실행 중 chatrooms 내 문서 없음")
                             return nil
@@ -159,7 +162,7 @@ class ChatroomsViewModel: ObservableObject {
                 if !documents.isEmpty {
                     joined_chatrooms = documents.compactMap { document in
                         if document.exists {
-                            return ChatroomModel(id: document.documentID, data: document.data())
+                            return try? document.data(as: ChatroomModel.self)
                         } else {
                             print("getJoinedChatrooms 함수 실행 중 chatrooms 내 문서 없음")
                             return nil

@@ -22,85 +22,60 @@ struct MypageView: View {
     @Binding var isCreate: Bool
     @Binding var isSetting: Bool
     
+    @Binding var showMypage: Bool
+    
     @Binding var chatroomDocId: String?
     
     private let chatroomsLimit: Int = 3
-    
-    // 섹션 인디케이터
-    private var indicator: some View {
-        RoundedRectangle(cornerRadius: 16)
-            .fill(Color("MOCDarkGray"))
-            .frame(
-                width: 60,
-                height: 8
-            )
-    }
-    
-    // 카메라 아이콘
-    private var iconCamera: some View {
-        Circle()
-            .frame(width: 32, height: 32)
-            .foregroundColor(Color("MOCBackground"))
-            .overlay(
-                RoundedRectangle(cornerRadius: 32)
-                    .inset(by: 0.5)
-                    .stroke(Color("MOCLightGray"), lineWidth: 1)
-            ).overlay(
-                Image("IconCamera")
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .frame(width: 15)
-            )
-    }
     
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
                 // 인디케이터
-                indicator
+                RoundedRectangle(cornerRadius: 16)
+                    .fill(Color("MOCDarkGray"))
+                    .frame(
+                        width: 60,
+                        height: 8
+                    )
                     .padding(.vertical, 13)
                 
                 ScrollView(showsIndicators: false) {
                     VStack(spacing: 0) {
                         // 프로필 사진
                         PhotosPicker(selection: $photosPickerItem, matching: .images) {
-                            if selectImage != nil {
-                                Image(uiImage: selectImage!)
-                                    .resizable()
-                                    .aspectRatio(contentMode: .fill)
-                                    .clipShape(Circle())
-                                    .frame(width: 140, height: 140)
-                                    .overlay(
-                                        Circle()
-                                            .stroke(Color("MOCDarkGray"), lineWidth: 1)
-                                    )
-                                    .overlay(iconCamera, alignment: .bottomTrailing)
-                            } else {
-                                if let profile = userInfo?.profile_image, profile != "" {
-                                    AsyncImage(url: URL(string: profile)) {
-                                        image in image.resizable()
-                                    } placeholder: {
-                                        Color("MOCDarkGray")
-                                    }
-                                    .aspectRatio(contentMode: .fill)
-                                    .clipShape(Circle())
-                                    .frame(width: 140, height: 140)
-                                    .overlay(
-                                        Circle()
-                                            .stroke(Color("MOCDarkGray"), lineWidth: 1)
-                                    )
-                                    .overlay(iconCamera, alignment: .bottomTrailing)
+                            Group {
+                                if selectImage != nil {
+                                    Image(uiImage: selectImage!)
+                                        .resizable()
+                                        .aspectRatio(contentMode: .fill)
                                 } else {
-                                    Circle()
-                                        .frame(width: 140, height: 140)
-                                        .foregroundColor(Color("MOCDarkGray"))
+                                    if let profile = userInfo?.profile_image, profile != "" {
+                                        AsyncImage(url: URL(string: profile)) {
+                                            image in image.resizable()
+                                        } placeholder: {
+                                            Color("MOCDarkGray")
+                                        }
+                                        .aspectRatio(contentMode: .fill)
                                         .overlay(
                                             Circle()
                                                 .stroke(Color("MOCDarkGray"), lineWidth: 1)
                                         )
-                                        .overlay(iconCamera, alignment: .bottomTrailing)
+                                        .overlay(IconCamera(), alignment: .bottomTrailing)
+                                    } else {
+                                        Circle()
+                                            .foregroundColor(Color("MOCDarkGray"))
+                                    }
                                 }
                             }
+                            .clipShape(Circle())
+                            .frame(width: 140, height: 140)
+                            .overlay(
+                                Circle()
+                                    .stroke(Color("MOCDarkGray"), lineWidth: 1)
+                            )
+                            .overlay(IconCamera(), alignment: .bottomTrailing)
+                            
                         }
                         .onChange(of: photosPickerItem) { image, _ in
                             Task {
@@ -154,6 +129,7 @@ struct MypageView: View {
                             }
                             .onTapGesture {
                                 isSetting = true
+                                showMypage = false
                             }
                         }
                         .padding(.bottom, 25)
@@ -178,6 +154,7 @@ struct MypageView: View {
                                     )
                                     .onTapGesture {
                                         isCreate = true
+                                        showMypage = false
                                     }
                             }
                             
@@ -187,11 +164,12 @@ struct MypageView: View {
                         
                         if let chatrooms = chatroomsViewModel.created_chatrooms, chatrooms.count > 0 {
                             LazyVStack(spacing: 20) {
-                                ForEach(chatrooms, id: \.id) { chatroom in
-                                    chatroomBlock(data: chatroom)
+                                ForEach(chatrooms) { chatroom in
+                                    ChatroomBlock(data: chatroom)
                                         .onTapGesture {
                                             chatroomDocId = chatroom.id
                                             isChat = true
+                                            showMypage = false
                                         }
                                 }
                             }
@@ -216,11 +194,12 @@ struct MypageView: View {
                         
                         if let chatrooms = chatroomsViewModel.joined_chatrooms, chatrooms.count > 0 {
                             LazyVStack(spacing: 20) {
-                                ForEach(chatrooms, id: \.id) { chatroom in
-                                    chatroomBlock(data: chatroom)
+                                ForEach(chatrooms) { chatroom in
+                                    ChatroomBlock(data: chatroom)
                                         .onTapGesture {
                                             chatroomDocId = chatroom.id
                                             isChat = true
+                                            showMypage = false
                                         }
                                 }
                             }
@@ -241,81 +220,6 @@ struct MypageView: View {
                 await chatroomsViewModel.getJoinedChatrooms()
             }
         }
-    }
-    
-    func chatroomBlock(data: ChatroomModel) -> some View {
-        return RoundedRectangle(cornerRadius: 16)
-            .fill(Color("MOCBackground"))
-            .stroke(Color("MOCLightGray"), lineWidth: 1)
-            .frame(maxWidth: .infinity)
-            .frame(height: 100)
-            .overlay(
-                HStack {
-                    // 채팅방 정보
-                    VStack(alignment: .leading, spacing: 0) {
-                        Text(data.title)
-                            .font(
-                                .custom("Pretendard", size: 16)
-                                .weight(.medium)
-                            )
-                            .foregroundColor(Color("MOCTextColor"))
-                            .padding(.bottom, 2)
-                        
-                        HStack(spacing: 2) {
-                            Text("참여자")
-                                .font(Font.custom("Pretendard", size: 12))
-                                .foregroundColor(Color("MOCPink"))
-                            
-                            Text("\(data.joined_people.count)명")
-                                .font(Font.custom("Pretendard", size: 12))
-                                .foregroundColor(Color("MOCTextColor"))
-                        }
-                        
-                        Spacer()
-                        
-                        Text("\(formatTimestamp(timestamp: data.create_date)) 개설")
-                            .font(Font.custom("Pretendard", size: 10))
-                            .foregroundColor(Color("MOCDarkGray"))
-                    }
-                    
-                    Spacer()
-                    
-                    // 썸네일
-                    if data.thumbnail != "" {
-                        AsyncImage(url: URL(string: data.thumbnail)) { image in
-                            image
-                                .resizable()
-                                .frame(width: 80, height: 80)
-                        } placeholder: {
-                            Color("MOCDarkGray")
-                        }
-                        .aspectRatio(contentMode: .fill)
-                        .clipShape(RoundedRectangle(cornerRadius: 16))
-                        .frame(width: 80, height: 80)
-                    } else {
-                        RoundedRectangle(cornerRadius: 16)
-                            .fill(Color("MOCDarkGray"))
-                            .frame(width: 80, height: 80)
-                    }
-                }
-                    .padding(20)
-            )
-    }
-    
-    // Timestamp 타입 변환 함수
-    func formatTimestamp(timestamp: Timestamp) -> String {
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "yyyy. M. d"
-        let formattedDate = dateFormatter.string(from: timestamp.dateValue())
-        return formattedDate
-    }
-    
-    // Timestamp 타입 변환 함수
-    func formatKoreanTimestamp(timestamp: Timestamp) -> String {
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "yyyy년 M월 d일"
-        let formattedDate = dateFormatter.string(from: timestamp.dateValue())
-        return formattedDate
     }
 }
 

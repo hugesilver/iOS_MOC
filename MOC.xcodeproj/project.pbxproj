@@ -24,6 +24,10 @@
 		E2489EB92B5EDF7100F5FB04 /* Pretendard-Bold.otf in Resources */ = {isa = PBXBuildFile; fileRef = E2489EB42B5EDF7100F5FB04 /* Pretendard-Bold.otf */; };
 		E2489EBA2B5EDF7100F5FB04 /* GmarketSansBold.otf in Resources */ = {isa = PBXBuildFile; fileRef = E2489EB52B5EDF7100F5FB04 /* GmarketSansBold.otf */; };
 		E2489EBB2B5EDF7100F5FB04 /* Pretendard-SemiBold.otf in Resources */ = {isa = PBXBuildFile; fileRef = E2489EB62B5EDF7100F5FB04 /* Pretendard-SemiBold.otf */; };
+		E25F89EA2D2EEE8900D7BF5C /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = E25F89E92D2EEE8900D7BF5C /* Utils.swift */; };
+		E25F89ED2D2EF64800D7BF5C /* IconCamera.swift in Sources */ = {isa = PBXBuildFile; fileRef = E25F89EC2D2EF64800D7BF5C /* IconCamera.swift */; };
+		E25F89EF2D2EF7B900D7BF5C /* ChatroomBlock.swift in Sources */ = {isa = PBXBuildFile; fileRef = E25F89EE2D2EF7B900D7BF5C /* ChatroomBlock.swift */; };
+		E25F89F12D2EFA8400D7BF5C /* MessageBlocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = E25F89F02D2EFA8400D7BF5C /* MessageBlocks.swift */; };
 		E265979D2B2DECCB00E2A0F3 /* MOCApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = E265979C2B2DECCB00E2A0F3 /* MOCApp.swift */; };
 		E265979F2B2DECCB00E2A0F3 /* SplashView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E265979E2B2DECCB00E2A0F3 /* SplashView.swift */; };
 		E26597A12B2DECCD00E2A0F3 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = E26597A02B2DECCD00E2A0F3 /* Assets.xcassets */; };
@@ -105,6 +109,10 @@
 		E2489EB42B5EDF7100F5FB04 /* Pretendard-Bold.otf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Pretendard-Bold.otf"; sourceTree = "<group>"; };
 		E2489EB52B5EDF7100F5FB04 /* GmarketSansBold.otf */ = {isa = PBXFileReference; lastKnownFileType = file; path = GmarketSansBold.otf; sourceTree = "<group>"; };
 		E2489EB62B5EDF7100F5FB04 /* Pretendard-SemiBold.otf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Pretendard-SemiBold.otf"; sourceTree = "<group>"; };
+		E25F89E92D2EEE8900D7BF5C /* Utils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utils.swift; sourceTree = "<group>"; };
+		E25F89EC2D2EF64800D7BF5C /* IconCamera.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IconCamera.swift; sourceTree = "<group>"; };
+		E25F89EE2D2EF7B900D7BF5C /* ChatroomBlock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatroomBlock.swift; sourceTree = "<group>"; };
+		E25F89F02D2EFA8400D7BF5C /* MessageBlocks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageBlocks.swift; sourceTree = "<group>"; };
 		E26597992B2DECCB00E2A0F3 /* MOC.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MOC.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		E265979C2B2DECCB00E2A0F3 /* MOCApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MOCApp.swift; sourceTree = "<group>"; };
 		E265979E2B2DECCB00E2A0F3 /* SplashView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplashView.swift; sourceTree = "<group>"; };
@@ -205,6 +213,16 @@
 			path = Fonts;
 			sourceTree = "<group>";
 		};
+		E25F89EB2D2EF63400D7BF5C /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				E25F89EC2D2EF64800D7BF5C /* IconCamera.swift */,
+				E25F89EE2D2EF7B900D7BF5C /* ChatroomBlock.swift */,
+				E25F89F02D2EFA8400D7BF5C /* MessageBlocks.swift */,
+			);
+			path = Components;
+			sourceTree = "<group>";
+		};
 		E26597902B2DECCB00E2A0F3 = {
 			isa = PBXGroup;
 			children = (
@@ -234,12 +252,13 @@
 			children = (
 				E2489EA32B59880000F5FB04 /* GoogleService-Info.plist */,
 				E2A3D4832B56D38E00979248 /* Info.plist */,
-				E26597C82B2DF23A00E2A0F3 /* ViewModel */,
-				E26597C72B2DF23400E2A0F3 /* Model */,
-				E26597C62B2DF22C00E2A0F3 /* View */,
+				E26597C82B2DF23A00E2A0F3 /* ViewModels */,
+				E26597C72B2DF23400E2A0F3 /* Models */,
+				E26597C62B2DF22C00E2A0F3 /* Views */,
 				E265979C2B2DECCB00E2A0F3 /* MOCApp.swift */,
 				E26597A02B2DECCD00E2A0F3 /* Assets.xcassets */,
 				E26597A22B2DECCD00E2A0F3 /* Preview Content */,
+				E25F89E92D2EEE8900D7BF5C /* Utils.swift */,
 			);
 			path = MOC;
 			sourceTree = "<group>";
@@ -269,9 +288,10 @@
 			path = MOCUITests;
 			sourceTree = "<group>";
 		};
-		E26597C62B2DF22C00E2A0F3 /* View */ = {
+		E26597C62B2DF22C00E2A0F3 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				E25F89EB2D2EF63400D7BF5C /* Components */,
 				E2D7B5E72B94C90A00363489 /* SettingAccountView.swift */,
 				E265979E2B2DECCB00E2A0F3 /* SplashView.swift */,
 				E2489EA12B56DF7700F5FB04 /* WelcomeView.swift */,
@@ -281,20 +301,20 @@
 				E22545702B7A928900E1F031 /* ChatView.swift */,
 				E225457C2B90F74500E1F031 /* CreateChatroomView.swift */,
 			);
-			path = View;
+			path = Views;
 			sourceTree = "<group>";
 		};
-		E26597C72B2DF23400E2A0F3 /* Model */ = {
+		E26597C72B2DF23400E2A0F3 /* Models */ = {
 			isa = PBXGroup;
 			children = (
 				E2AC8B4E2B679AD600CDC1F5 /* UserInfoModel.swift */,
 				E225457A2B8FBD4500E1F031 /* MessageModel.swift */,
 				E22545762B7E8BED00E1F031 /* ChatroomModel.swift */,
 			);
-			path = Model;
+			path = Models;
 			sourceTree = "<group>";
 		};
-		E26597C82B2DF23A00E2A0F3 /* ViewModel */ = {
+		E26597C82B2DF23A00E2A0F3 /* ViewModels */ = {
 			isa = PBXGroup;
 			children = (
 				E2489EAA2B599D5E00F5FB04 /* AuthenticationViewModel.swift */,
@@ -302,7 +322,7 @@
 				E22545742B7A92A700E1F031 /* ChatViewModel.swift */,
 				E22545782B7E90B500E1F031 /* ChatroomsViewModel.swift */,
 			);
-			path = ViewModel;
+			path = ViewModels;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -403,7 +423,7 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 1510;
-				LastUpgradeCheck = 1510;
+				LastUpgradeCheck = 1620;
 				TargetAttributes = {
 					E26597982B2DECCB00E2A0F3 = {
 						CreatedOnToolsVersion = 15.1;
@@ -555,15 +575,19 @@
 				E22545712B7A928900E1F031 /* ChatView.swift in Sources */,
 				E265979F2B2DECCB00E2A0F3 /* SplashView.swift in Sources */,
 				E2754A7F2B73F46C001FA19D /* MypageView.swift in Sources */,
+				E25F89ED2D2EF64800D7BF5C /* IconCamera.swift in Sources */,
 				E225457D2B90F74500E1F031 /* CreateChatroomView.swift in Sources */,
 				E2489EAD2B5C10EF00F5FB04 /* UserInfoViewModel.swift in Sources */,
 				E2AC8B552B7292B600CDC1F5 /* ChatListView.swift in Sources */,
 				E2AC8B4F2B679AD700CDC1F5 /* UserInfoModel.swift in Sources */,
+				E25F89EF2D2EF7B900D7BF5C /* ChatroomBlock.swift in Sources */,
+				E25F89EA2D2EEE8900D7BF5C /* Utils.swift in Sources */,
 				E2D7B5E82B94C90A00363489 /* SettingAccountView.swift in Sources */,
 				E22545772B7E8BED00E1F031 /* ChatroomModel.swift in Sources */,
 				E225457B2B8FBD4500E1F031 /* MessageModel.swift in Sources */,
 				E2489EA22B56DF7700F5FB04 /* WelcomeView.swift in Sources */,
 				E22545792B7E90B500E1F031 /* ChatroomsViewModel.swift in Sources */,
+				E25F89F12D2EFA8400D7BF5C /* MessageBlocks.swift in Sources */,
 				E22545752B7A92A700E1F031 /* ChatViewModel.swift in Sources */,
 				E265979D2B2DECCB00E2A0F3 /* MOCApp.swift in Sources */,
 			);
@@ -793,7 +817,6 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = AAB40F0A4085F508BA1763FA /* Pods-MOCTests.debug.xcconfig */;
 			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
@@ -814,7 +837,6 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 75B983F56763BD360A00F01C /* Pods-MOCTests.release.xcconfig */;
 			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
@@ -835,7 +857,6 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 733D240EADB8C548EBA2AAFB /* Pods-MOC-MOCUITests.debug.xcconfig */;
 			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 42NW282TDP;
@@ -854,7 +875,6 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = FC47368DBFAE621402B4DDED /* Pods-MOC-MOCUITests.release.xcconfig */;
 			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 42NW282TDP;

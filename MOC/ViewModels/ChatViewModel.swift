@@ -8,6 +8,7 @@
 import Foundation
 import FirebaseAuth
 import FirebaseFirestore
+import FirebaseFirestoreSwift
 import FirebaseStorage
 
 @MainActor
@@ -48,10 +49,10 @@ class ChatViewModel: ObservableObject {
             }
             
             if document.exists {
-                self.chatroom = ChatroomModel(id: document.documentID, data: document.data()!)
+                self.chatroom = try? document.data(as: ChatroomModel.self)
                 
                 Task {
-                    await self.getUsersData(chatroomModel: ChatroomModel(id: document.documentID, data: document.data()!)!)
+                    await self.getUsersData(chatroomModel: try! document.data(as: ChatroomModel.self))
                 }
             } else {
                 print("ChatroomModel 변환 중 실패")
@@ -74,7 +75,7 @@ class ChatViewModel: ObservableObject {
             if self.messages != nil {
                 querySnapshot?.documentChanges.forEach { diff in
                     if (diff.type == .added) {
-                        if let firstChat = documents.first, let firstChatModel = MessageModel(id: firstChat.documentID, data: firstChat.data()) {
+                        if let firstChat = documents.first, let firstChatModel = try? firstChat.data(as: MessageModel.self) {
                             self.firstChatDocument = firstChatModel
                             self.messages = [firstChatModel] + self.messages!
                         }
@@ -89,7 +90,7 @@ class ChatViewModel: ObservableObject {
             } else {
                 self.messages = documents.compactMap { document in
                     if document.exists {
-                        return MessageModel(id: document.documentID, data: document.data())
+                        return try? document.data(as: MessageModel.self)
                     } else {
                         print("chats 컬렉션 \(docId) 문서의 chat 컬렉션 내 \(document.documentID) 문서가 not exist")
                         self.showAlert = true
@@ -122,7 +123,7 @@ class ChatViewModel: ObservableObject {
             if !documents.isEmpty{
                 let tempMessages = documents.compactMap { document in
                     if document.exists {
-                        return MessageModel(id: document.documentID, data: document.data())
+                        return try? document.data(as: MessageModel.self)
                     } else {
                         print("ChatModel 변환 중 실패")
                         return nil
@@ -162,7 +163,7 @@ class ChatViewModel: ObservableObject {
                 let document = try await ref.getDocument()
                 
                 if document.exists {
-                    joinedUsers[person] = UserInfoModel(data: document.data()!)
+                    joinedUsers[person] = try? document.data(as: UserInfoModel.self)
                 }
             } catch {
                 print("\(person)의 문서 불러오기 실패")
