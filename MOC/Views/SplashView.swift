@@ -46,17 +46,13 @@ struct SplashView: View {
                 }
             }
             .navigationDestination(isPresented: $showView, destination: {
-                if viewModel.user == nil {
+                if viewModel.user == nil || viewModel.userInfo?.nickname == nil {
                     WelcomeView()
                 } else {
-                    if viewModel.userInfo?.nickname == nil {
-                        WelcomeView()
+                    if viewModel.userInfo?.nickname == "" {
+                        SignupView(viewModel: viewModel)
                     } else {
-                        if viewModel.userInfo?.nickname == "" {
-                            SignupView(viewModel: viewModel)
-                        } else {
-                            ChatListView()
-                        }
+                        ChatListView()
                     }
                 }
             })

@@ -15,9 +15,11 @@ struct ChatListView: View {
     @State var showAlert: Bool = false
     @State var chatroomDocId: String?
     
-    @State var isChat: Bool = false
-    @State var isCreate: Bool = false
-    @State var isSetting: Bool = false
+    enum NavigationDestination {
+        case chat, create, setting
+    }
+    
+    @State private var navigationDestination: NavigationDestination?
     
     @State private var showMypage = false
     @State private var mypageOffset: CGFloat = 0
@@ -89,7 +91,7 @@ struct ChatListView: View {
                                                 if !chatroom.joined_people.contains(chatroomsViewModel.user!.uid) {
                                                     showAlert = true
                                                 } else {
-                                                    isChat = true
+                                                    navigationDestination = .chat
                                                 }
                                             }
                                         }
@@ -144,9 +146,7 @@ struct ChatListView: View {
                 userInfo: $userInfoViewModel.userInfo,
                 selectImage: $selectImage,
                 imageUpdated: $imageUpdated,
-                isChat: $isChat,
-                isCreate: $isCreate,
-                isSetting: $isSetting,
+                navigationDestination: $navigationDestination,
                 showMypage: $showMypage,
                 chatroomDocId: $chatroomDocId
             )
@@ -185,20 +185,18 @@ struct ChatListView: View {
                         await chatroomsViewModel.getChatrooms()
                     }
                     
-                    isChat = true
+                    navigationDestination = .chat
                 }),
                 secondaryButton: .default(Text("취소"))
             )
         }
-        .navigationDestination(isPresented: $isChat, destination: {
-            ChatView(docId: $chatroomDocId)
-        })
-        .navigationDestination(isPresented: $isCreate, destination: {
-            CreateChatroomView()
-        })
-        .navigationDestination(isPresented: $isSetting, destination: {
-            SettingAccountView(userInfo: $userInfoViewModel.userInfo)
-        })
+        .navigationDestination(item: $navigationDestination) {destination in
+            switch destination {
+                case .chat: ChatView(docId: $chatroomDocId)
+            case .create: CreateChatroomView()
+            case .setting: SettingAccountView(userInfo: $userInfoViewModel.userInfo)
+            }
+        }
     }
 }
 

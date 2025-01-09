@@ -18,9 +18,7 @@ struct MypageView: View {
     
     @StateObject private var chatroomsViewModel = ChatroomsViewModel()
     
-    @Binding var isChat: Bool
-    @Binding var isCreate: Bool
-    @Binding var isSetting: Bool
+    @Binding var navigationDestination: ChatListView.NavigationDestination?
     
     @Binding var showMypage: Bool
     
@@ -128,7 +126,7 @@ struct MypageView: View {
                                     .padding(.vertical, 8)
                             }
                             .onTapGesture {
-                                isSetting = true
+                                navigationDestination = .setting
                                 showMypage = false
                             }
                         }
@@ -153,7 +151,7 @@ struct MypageView: View {
                                             .frame(width: 10, height: 10)
                                     )
                                     .onTapGesture {
-                                        isCreate = true
+                                        navigationDestination = .create
                                         showMypage = false
                                     }
                             }
@@ -168,7 +166,7 @@ struct MypageView: View {
                                     ChatroomBlock(data: chatroom)
                                         .onTapGesture {
                                             chatroomDocId = chatroom.id
-                                            isChat = true
+                                            navigationDestination = .chat
                                             showMypage = false
                                         }
                                 }
@@ -198,7 +196,7 @@ struct MypageView: View {
                                     ChatroomBlock(data: chatroom)
                                         .onTapGesture {
                                             chatroomDocId = chatroom.id
-                                            isChat = true
+                                            navigationDestination = .chat
                                             showMypage = false
                                         }
                                 }
